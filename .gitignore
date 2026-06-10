@@ -1,0 +1,35 @@
+## Ignorar archivos compilados
+bin/
+obj/
+*.exe
+*.dll
+*.pdb
+
+## Ignorar configuraciones de usuario
+appsettings.json
+appsettings.Development.json
+*.user
+*.suo
+*.userprefs
+*.lock.json
+*.ds_store
+
+## Ignorar carpetas de VS
+.vs/
+.vscode/
+*.swp
+*.swo
+
+## Ignorar logs
+*.log
+logs/
+Logs/
+
+## Ignorar archivos temporales
+*.tmp
+*.temp
+*.cache
+
+## Ignorar archivos de publicación
+publish/
+Published/

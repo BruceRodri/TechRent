@@ -1,0 +1,103 @@
+@model IEnumerable<TechRent.Models.Cliente>
+
+@{
+    ViewData["Title"] = "Clientes";
+}
+
+<div class="container mt-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="bi bi-people-fill" style="color: #4361ee;"></i> 
+                Nuestros Clientes
+            </h1>
+            <p class="text-muted">Gestión de clientes que alquilan equipos tecnológicos</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="bi bi-person-plus-fill"></i> Nuevo Cliente
+        </a>
+    </div>
+
+    <!-- Tarjetas de resumen -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-people-fill" style="color: #4361ee;"></i>
+                <div class="number">@Model.Count()</div>
+                <div class="text-muted">Clientes Registrados</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-envelope-fill" style="color: #06d6a0;"></i>
+                <div class="number">@Model.Count(c => c.Email != null)</div>
+                <div class="text-muted">Correos Registrados</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-telephone-fill" style="color: #f72585;"></i>
+                <div class="number">@Model.Count(c => c.Telefono != null)</div>
+                <div class="text-muted">Teléfonos Registrados</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tarjetas de clientes (estilo moderno) -->
+    <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h5 class="card-title">
+                                    <i class="bi bi-person-circle" style="color: #4361ee;"></i>
+                                    @item.NombreCompleto
+                                </h5>
+                                <h6 class="card-subtitle mb-2 text-muted">
+                                    <i class="bi bi-person-badge"></i> ID: @item.DocumentoIdentidad
+                                </h6>
+                            </div>
+                            <span class="badge bg-success rounded-pill">Activo</span>
+                        </div>
+                        
+                        <hr />
+                        
+                        <div class="mb-2">
+                            <i class="bi bi-envelope-fill text-primary"></i>
+                            <small>@item.Email</small>
+                        </div>
+                        <div class="mb-2">
+                            <i class="bi bi-telephone-fill text-success"></i>
+                            <small>@item.Telefono</small>
+                        </div>
+                        <div class="mb-3">
+                            <i class="bi bi-geo-alt-fill text-danger"></i>
+                            <small>@(item.Direccion ?? "Sin dirección registrada")</small>
+                        </div>
+                        
+                        <div class="d-flex justify-content-end gap-2">
+                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                <i class="bi bi-pencil"></i> Editar
+                            </a>
+                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                <i class="bi bi-eye"></i> Ver
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-footer text-muted">
+                        <small>
+                            <i class="bi bi-calendar"></i> Registrado: @item.FechaCreacion.ToString("dd/MM/yyyy")
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

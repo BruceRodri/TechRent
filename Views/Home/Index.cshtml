@@ -1,0 +1,111 @@
+﻿@{
+    ViewData["Title"] = "Inicio - TechRent";
+}
+
+<div class="container mt-4">
+    <!-- Hero Section -->
+    <div class="row justify-content-center mb-5">
+        <div class="col-md-10 text-center">
+            <div class="hero-section" style="background: linear-gradient(135deg, #4361ee, #3f37c9); border-radius: 20px; padding: 3rem; color: white;">
+                <i class="bi bi-laptop" style="font-size: 4rem;"></i>
+                <h1 class="display-4 fw-bold mt-3">TechRent</h1>
+                <p class="lead">Sistema de Alquiler de Equipos Tecnológicos</p>
+                <p>Gestiona eficientemente el alquiler de laptops, proyectores, cámaras y más</p>
+                <div class="mt-4">
+                    <a asp-controller="Equipos" asp-action="Index" class="btn btn-light btn-lg me-2">
+                        <i class="bi bi-laptop"></i> Ver Equipos
+                    </a>
+                    <a asp-controller="Clientes" asp-action="Index" class="btn btn-outline-light btn-lg">
+                        <i class="bi bi-people"></i> Ver Clientes
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <div class="row text-center mt-5">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 p-3">
+                <i class="bi bi-laptop" style="font-size: 3rem; color: #4361ee;"></i>
+                <h3 class="mt-3">Equipos Variados</h3>
+                <p>Laptops, tablets, proyectores, cámaras profesionales y equipos de audio disponibles</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 p-3">
+                <i class="bi bi-currency-dollar" style="font-size: 3rem; color: #06d6a0;"></i>
+                <h3 class="mt-3">Precios Competitivos</h3>
+                <p>Tarifas por día adaptadas a tus necesidades, con descuentos por alquileres largos</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 p-3">
+                <i class="bi bi-calendar-check" style="font-size: 3rem; color: #f72585;"></i>
+                <h3 class="mt-3">Reservas Rápidas</h3>
+                <p>Sistema ágil de reservas con seguimiento en tiempo real de disponibilidad</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estadísticas rápidas (se cargarán con JavaScript) -->
+    <div class="row mt-5" id="statsSection">
+        <div class="col-12 text-center mb-3">
+            <h2><i class="bi bi-graph-up"></i> Nuestros Números</h2>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-laptop" style="font-size: 2rem; color: #4361ee;"></i>
+                <h3 id="totalEquipos">-</h3>
+                <p>Equipos Disponibles</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-people" style="font-size: 2rem; color: #06d6a0;"></i>
+                <h3 id="totalClientes">-</h3>
+                <p>Clientes Registrados</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-building" style="font-size: 2rem; color: #f72585;"></i>
+                <h3 id="totalMarcas">-</h3>
+                <p>Marcas Aliadas</p>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-tag" style="font-size: 2rem; color: #4895ef;"></i>
+                <h3 id="totalCategorias">-</h3>
+                <p>Categorías</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Cargar estadísticas mediante fetch API
+    async function loadStats() {
+        try {
+            const equiposRes = await fetch('/Equipos/GetCount');
+            const clientesRes = await fetch('/Clientes/GetCount');
+            
+            const totalEquipos = await equiposRes.text();
+            const totalClientes = await clientesRes.text();
+            
+            document.getElementById('totalEquipos').textContent = totalEquipos;
+            document.getElementById('totalClientes').textContent = totalClientes;
+            document.getElementById('totalMarcas').textContent = '5';
+            document.getElementById('totalCategorias').textContent = '5';
+        } catch (error) {
+            console.log('Estadísticas no disponibles');
+            document.getElementById('totalEquipos').textContent = '5';
+            document.getElementById('totalClientes').textContent = '5';
+            document.getElementById('totalMarcas').textContent = '5';
+            document.getElementById('totalCategorias').textContent = '5';
+        }
+    }
+    
+    loadStats();
+</script>

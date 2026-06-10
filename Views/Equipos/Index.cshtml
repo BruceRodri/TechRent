@@ -1,0 +1,120 @@
+@model IEnumerable<TechRent.Models.Equipo>
+
+@{
+    ViewData["Title"] = "Equipos Tecnológicos";
+}
+
+<div class="container mt-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1>
+                <i class="bi bi-laptop" style="color: #4361ee;"></i> 
+                Equipos Tecnológicos
+            </h1>
+            <p class="text-muted">Gestión completa de equipos disponibles para alquiler</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nuevo Equipo
+        </a>
+    </div>
+
+    <!-- Tarjeta de resumen -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-laptop" style="color: #4361ee;"></i>
+                <div class="number">@Model.Count()</div>
+                <div class="text-muted">Equipos Registrados</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-tag" style="color: #06d6a0;"></i>
+                <div class="number">@Model.Sum(e => e.Stock)</div>
+                <div class="text-muted">Unidades en Stock</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-currency-dollar" style="color: #f72585;"></i>
+                <div class="number">S/@Model.Average(e => e.PrecioPorDia).ToString("0.00")</div>
+                <div class="text-muted">Precio Promedio/Día</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-building" style="color: #4895ef;"></i>
+                <div class="number">@Model.Select(e => e.Marca.Nombre).Distinct().Count()</div>
+                <div class="text-muted">Marcas Disponibles</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de equipos -->
+    <div class="card">
+        <div class="card-header">
+            <i class="bi bi-list-check"></i> Lista de Equipos
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th><i class="bi bi-image"></i> Equipo</th>
+                        <th><i class="bi bi-tag"></i> Categoría</th>
+                        <th><i class="bi bi-building"></i> Marca</th>
+                        <th><i class="bi bi-currency-dollar"></i> Precio/Día</th>
+                        <th><i class="bi bi-box"></i> Stock</th>
+                        <th><i class="bi bi-gear"></i> Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.Nombre</strong>
+                                <br />
+                                <small class="text-muted">@(item.Descripcion?.Length > 50 ? item.Descripcion.Substring(0, 50) + "..." : item.Descripcion)</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-info">@item.Categoria?.Nombre</span>
+                            </td>
+                            <td>@item.Marca?.Nombre</td>
+                            <td>
+                                <strong class="text-success">S/@item.PrecioPorDia.ToString("0.00")</strong>
+                                <br />
+                                <small>/día</small>
+                            </td>
+                            <td>
+                                @if (item.Stock > 5)
+                                {
+                                    <span class="badge bg-success">@item.Stock disponibles</span>
+                                }
+                                else if (item.Stock > 0)
+                                {
+                                    <span class="badge bg-warning">@item.Stock disponibles</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Agotado</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
