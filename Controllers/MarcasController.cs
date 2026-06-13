@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,11 +6,11 @@ using TechRent.Models;
 
 namespace TechRent.Controllers
 {
-    public class ClientesController : Controller
+    public class MarcasController : Controller
     {
         private readonly AppDbContext _context;
 
-        public ClientesController(AppDbContext context)
+        public MarcasController(AppDbContext context)
         {
             _context = context;
         }
@@ -32,46 +28,39 @@ namespace TechRent.Controllers
             if (sesion != null) return sesion;
 
             int pageSize = 20;
-            var query = _context.Clientes.AsNoTracking().Where(c => c.Activo);
+            var query = _context.Marcas.AsNoTracking().Where(m => m.Activo);
 
             if (!string.IsNullOrEmpty(searchString))
             {
                 var searchLower = searchString.ToLower();
-                query = query.Where(c => c.NombreCompleto.ToLower().Contains(searchLower) ||
-                                          c.Email.ToLower().Contains(searchLower) ||
-                                          c.Telefono.ToLower().Contains(searchLower));
+                query = query.Where(m => m.Nombre.ToLower().Contains(searchLower) ||
+                                          (m.PaisOrigen != null && m.PaisOrigen.ToLower().Contains(searchLower)));
             }
 
             var totalRegistros = await query.CountAsync();
-            var clientesConEmail = await query.CountAsync(c => c.Email != null);
-            var clientesConTelefono = await query.CountAsync(c => c.Telefono != null);
-
-            var clientes = await query
-                .OrderBy(c => c.NombreCompleto)
+            var items = await query
+                .OrderBy(m => m.Nombre)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
 
             ViewBag.TotalRegistros = totalRegistros;
-            ViewBag.ClientesConEmail = clientesConEmail;
-            ViewBag.ClientesConTelefono = clientesConTelefono;
             ViewBag.PageNumber = pageNumber;
             ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
             ViewBag.SearchString = searchString;
 
-            return View(clientes);
+            return View(items);
         }
 
         public async Task<IActionResult> Details(int? id)
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(m => m.Id == id);
-            if (cliente == null) return NotFound();
-            return View(cliente);
+            var item = await _context.Marcas.FirstOrDefaultAsync(m => m.Id == id);
+            if (item == null) return NotFound();
+            return View(item);
         }
 
         public IActionResult Create()
@@ -83,7 +72,7 @@ namespace TechRent.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Cliente cliente)
+        public async Task<IActionResult> Create(Marca marca)
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
@@ -92,33 +81,31 @@ namespace TechRent.Controllers
 
             if (ModelState.IsValid)
             {
-                cliente.FechaCreacion = DateTime.UtcNow;
-                _context.Add(cliente);
+                marca.FechaCreacion = DateTime.UtcNow;
+                _context.Add(marca);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
-            return View(cliente);
+            return View(marca);
         }
 
         public async Task<IActionResult> Edit(int? id)
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
-            var cliente = await _context.Clientes.FindAsync(id);
-            if (cliente == null) return NotFound();
-            return View(cliente);
+            var item = await _context.Marcas.FindAsync(id);
+            if (item == null) return NotFound();
+            return View(item);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Cliente cliente)
+        public async Task<IActionResult> Edit(int id, Marca marca)
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
-
-            if (id != cliente.Id) return NotFound();
+            if (id != marca.Id) return NotFound();
 
             ModelState.Remove("FechaCreacion");
 
@@ -126,38 +113,34 @@ namespace TechRent.Controllers
             {
                 try
                 {
-                    var dbCliente = await _context.Clientes.FindAsync(id);
-                    if (dbCliente == null) return NotFound();
+                    var dbMarca = await _context.Marcas.FindAsync(id);
+                    if (dbMarca == null) return NotFound();
 
-                    dbCliente.NombreCompleto = cliente.NombreCompleto;
-                    dbCliente.Email = cliente.Email;
-                    dbCliente.Telefono = cliente.Telefono;
-                    dbCliente.Direccion = cliente.Direccion;
-                    dbCliente.DocumentoIdentidad = cliente.DocumentoIdentidad;
-                    dbCliente.Activo = cliente.Activo;
-                    dbCliente.FechaActualizacion = DateTime.UtcNow;
+                    dbMarca.Nombre = marca.Nombre;
+                    dbMarca.PaisOrigen = marca.PaisOrigen;
+                    dbMarca.Activo = marca.Activo;
+                    dbMarca.FechaActualizacion = DateTime.UtcNow;
 
                     await _context.SaveChangesAsync();
                 }
                 catch (DbUpdateConcurrencyException)
                 {
-                    if (!ClienteExists(cliente.Id)) return NotFound();
+                    if (!_context.Marcas.Any(e => e.Id == marca.Id)) return NotFound();
                     else throw;
                 }
                 return RedirectToAction(nameof(Index));
             }
-            return View(cliente);
+            return View(marca);
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
-            var cliente = await _context.Clientes.FirstOrDefaultAsync(m => m.Id == id);
-            if (cliente == null) return NotFound();
-            return View(cliente);
+            var item = await _context.Marcas.FirstOrDefaultAsync(m => m.Id == id);
+            if (item == null) return NotFound();
+            return View(item);
         }
 
         [HttpPost, ActionName("Delete")]
@@ -166,27 +149,20 @@ namespace TechRent.Controllers
         {
             var sesion = VerificarSesion();
             if (sesion != null) return sesion;
-
-            var cliente = await _context.Clientes.FindAsync(id);
-            if (cliente != null)
+            var item = await _context.Marcas.IgnoreQueryFilters().FirstOrDefaultAsync(m => m.Id == id);
+            if (item != null)
             {
-                cliente.Activo = false;
-                cliente.FechaEliminacion = DateTime.UtcNow;
-                cliente.FechaActualizacion = DateTime.UtcNow;
+                item.Activo = false;
+                item.FechaEliminacion = DateTime.UtcNow;
+                item.FechaActualizacion = DateTime.UtcNow;
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 
-        private bool ClienteExists(int id)
-        {
-            return _context.Clientes.Any(e => e.Id == id);
-        }
-
-        [HttpGet]
         public async Task<IActionResult> GetCount()
         {
-            var count = await _context.Clientes.CountAsync();
+            var count = await _context.Marcas.CountAsync();
             return Ok(count);
         }
     }

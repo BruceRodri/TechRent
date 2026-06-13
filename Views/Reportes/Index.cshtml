@@ -1,0 +1,102 @@
+@{
+    ViewData["Title"] = "Reportes";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-bar-chart-fill" style="color: #4361ee;"></i> Panel de Reportes</h1>
+    <p class="text-muted">Indicadores y estadísticas del sistema TechRent</p>
+
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-laptop" style="color: #4361ee;"></i>
+                <div class="number">@ViewBag.TotalEquipos</div>
+                <div class="text-muted">Total Equipos</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-people-fill" style="color: #06d6a0;"></i>
+                <div class="number">@ViewBag.TotalClientes</div>
+                <div class="text-muted">Total Clientes</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-calendar-check" style="color: #f72585;"></i>
+                <div class="number">@ViewBag.TotalReservas</div>
+                <div class="text-muted">Total Reservas</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="dashboard-card">
+                <i class="bi bi-currency-dollar" style="color: #4895ef;"></i>
+                <div class="number">$@ViewBag.SumaTotalReservas.ToString("0.00")</div>
+                <div class="text-muted">Suma Total Ventas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-graph-up-arrow" style="color: #e76f51;"></i>
+                <div class="number">$@ViewBag.PromedioVentas.ToString("0.00")</div>
+                <div class="text-muted">Promedio por Reserva</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-tags-fill" style="color: #2a9d8f;"></i>
+                <div class="number">@ViewBag.TotalCategorias</div>
+                <div class="text-muted">Total Categorías</div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-building" style="color: #264653;"></i>
+                <div class="number">@ViewBag.TotalMarcas</div>
+                <div class="text-muted">Total Marcas</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-trophy-fill text-warning"></i> Top 5 Equipos Más Alquilados
+                </div>
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Equipo</th>
+                                <th>Veces Alquilado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                var equipos = ViewBag.EquiposMasAlquilados;
+                                if (equipos != null)
+                                {
+                                    int i = 1;
+                                    foreach (var item in equipos)
+                                    {
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@item.Nombre</td>
+                                            <td><strong>@item.TotalAlquileres</strong></td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

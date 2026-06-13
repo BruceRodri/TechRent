@@ -21,35 +21,36 @@
 
     <!-- Tarjeta de resumen -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="dashboard-card">
                 <i class="bi bi-laptop" style="color: #4361ee;"></i>
-                <div class="number">@Model.Count()</div>
+                <div class="number">@ViewBag.TotalRegistros</div>
                 <div class="text-muted">Equipos Registrados</div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="dashboard-card">
                 <i class="bi bi-tag" style="color: #06d6a0;"></i>
-                <div class="number">@Model.Sum(e => e.Stock)</div>
+                <div class="number">@ViewBag.TotalStock</div>
                 <div class="text-muted">Unidades en Stock</div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="dashboard-card">
                 <i class="bi bi-currency-dollar" style="color: #f72585;"></i>
-                <div class="number">S/@Model.Average(e => e.PrecioPorDia).ToString("0.00")</div>
+                <div class="number">$@ViewBag.PrecioPromedio.ToString("0.00")</div>
                 <div class="text-muted">Precio Promedio/Día</div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="dashboard-card">
-                <i class="bi bi-building" style="color: #4895ef;"></i>
-                <div class="number">@Model.Select(e => e.Marca.Nombre).Distinct().Count()</div>
-                <div class="text-muted">Marcas Disponibles</div>
-            </div>
-        </div>
     </div>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="searchString" class="form-control" placeholder="Buscar por nombre o descripción..." value="@ViewBag.SearchString" />
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
+        </div>
+    </form>
 
     <!-- Tabla de equipos -->
     <div class="card">
@@ -82,7 +83,7 @@
                             </td>
                             <td>@item.Marca?.Nombre</td>
                             <td>
-                                <strong class="text-success">S/@item.PrecioPorDia.ToString("0.00")</strong>
+                                <strong class="text-success">$@item.PrecioPorDia.ToString("0.00")</strong>
                                 <br />
                                 <small>/día</small>
                             </td>
@@ -117,4 +118,5 @@
             </table>
         </div>
     </div>
+    @await Html.PartialAsync("_Pagination")
 </div>

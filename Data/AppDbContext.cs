@@ -19,6 +19,7 @@ namespace TechRent.Data
         public DbSet<Reserva> Reservas { get; set; }
         public DbSet<DetalleReserva> DetalleReservas { get; set; }
         public DbSet<Pago> Pagos { get; set; }
+        public DbSet<Usuario> Usuarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -33,6 +34,7 @@ namespace TechRent.Data
             modelBuilder.Entity<EstadoReserva>().HasQueryFilter(e => e.Activo);
             modelBuilder.Entity<Reserva>().HasQueryFilter(r => r.Activo);
             modelBuilder.Entity<Pago>().HasQueryFilter(p => p.Activo);
+            modelBuilder.Entity<Usuario>().HasQueryFilter(u => u.Activo);
 
             // CONFIGURACIONES ADICIONALES DE RELACIONES
 

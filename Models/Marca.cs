@@ -14,5 +14,6 @@ namespace TechRent.Models
         public DateTime? FechaActualizacion { get; set; }
         // Relación: una marca tiene muchos equipos
         public ICollection<Equipo> Equipos { get; set; } = new List<Equipo>();
+        public DateTime? FechaEliminacion { get; set; }
     }
 }

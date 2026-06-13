@@ -1,0 +1,68 @@
+@model IEnumerable<TechRent.Models.Categoria>
+
+@{
+    ViewData["Title"] = "Categorías";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-tags-fill" style="color: #4361ee;"></i> Categorías</h1>
+            <p class="text-muted">Gestión de categorías de equipos tecnológicos</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nueva Categoría
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-tags-fill" style="color: #4361ee;"></i>
+                <div class="number">@ViewBag.TotalRegistros</div>
+                <div class="text-muted">Categorías Registradas</div>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="searchString" class="form-control" placeholder="Buscar por nombre..." value="@ViewBag.SearchString" />
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card-header"><i class="bi bi-list-check"></i> Lista de Categorías</div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Descripción</th>
+                        <th>Fecha Creación</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.Nombre</strong></td>
+                            <td>@(item.Descripcion ?? "—")</td>
+                            <td>@item.FechaCreacion.ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("_Pagination")
+</div>

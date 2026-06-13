@@ -85,21 +85,20 @@
 </div>
 
 <script>
-    // Cargar estadísticas mediante fetch API
     async function loadStats() {
         try {
-            const equiposRes = await fetch('/Equipos/GetCount');
-            const clientesRes = await fetch('/Clientes/GetCount');
-            
-            const totalEquipos = await equiposRes.text();
-            const totalClientes = await clientesRes.text();
-            
-            document.getElementById('totalEquipos').textContent = totalEquipos;
-            document.getElementById('totalClientes').textContent = totalClientes;
-            document.getElementById('totalMarcas').textContent = '5';
-            document.getElementById('totalCategorias').textContent = '5';
+            const [equiposRes, clientesRes, marcasRes, categoriasRes] = await Promise.all([
+                fetch('/Equipos/GetCount'),
+                fetch('/Clientes/GetCount'),
+                fetch('/Marcas/GetCount'),
+                fetch('/Categorias/GetCount')
+            ]);
+
+            document.getElementById('totalEquipos').textContent = await equiposRes.text();
+            document.getElementById('totalClientes').textContent = await clientesRes.text();
+            document.getElementById('totalMarcas').textContent = await marcasRes.text();
+            document.getElementById('totalCategorias').textContent = await categoriasRes.text();
         } catch (error) {
-            console.log('Estadísticas no disponibles');
             document.getElementById('totalEquipos').textContent = '5';
             document.getElementById('totalClientes').textContent = '5';
             document.getElementById('totalMarcas').textContent = '5';

@@ -1,0 +1,107 @@
+@model IEnumerable<TechRent.Models.Reserva>
+
+@{
+    ViewData["Title"] = "Reservas";
+}
+
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1><i class="bi bi-calendar-check" style="color: #4361ee;"></i> Reservas</h1>
+            <p class="text-muted">Gestión de reservas de equipos</p>
+        </div>
+        <a asp-action="Create" class="btn btn-primary btn-lg">
+            <i class="bi bi-plus-circle"></i> Nueva Reserva
+        </a>
+    </div>
+
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="dashboard-card">
+                <i class="bi bi-calendar-check" style="color: #4361ee;"></i>
+                <div class="number">@ViewBag.TotalRegistros</div>
+                <div class="text-muted">Reservas Registradas</div>
+            </div>
+        </div>
+    </div>
+
+    <form method="get" class="mb-3">
+        <div class="input-group">
+            <input type="text" name="searchString" class="form-control" placeholder="Buscar por cliente..." value="@ViewBag.SearchString" />
+            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
+            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
+        </div>
+    </form>
+
+    <div class="card">
+        <div class="card-header"><i class="bi bi-list-check"></i> Lista de Reservas</div>
+        <div class="card-body p-0">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Equipos</th>
+                        <th>Fecha Inicio</th>
+                        <th>Fecha Fin</th>
+                        <th>Monto Total</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td><strong>@item.Cliente?.NombreCompleto</strong></td>
+                            <td>
+                                @if (item.DetalleReservas != null && item.DetalleReservas.Any())
+                                {
+                                    @foreach (var d in item.DetalleReservas.Take(2))
+                                    {
+                                        <span class="badge bg-secondary me-1">@d.Equipo?.Nombre x@(d.Cantidad)</span>
+                                    }
+                                    @if (item.DetalleReservas.Count > 2)
+                                    {
+                                        <span class="badge bg-dark">+@(item.DetalleReservas.Count - 2)</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>@item.FechaInicio.ToString("dd/MM/yyyy")</td>
+                            <td>@item.FechaFin.ToString("dd/MM/yyyy")</td>
+                            <td><strong class="text-success">$@item.MontoTotal.ToString("0.00")</strong></td>
+                            <td>
+                                @if (item.EstadoReserva?.Nombre == "Activa")
+                                {
+                                    <span class="badge bg-success">@item.EstadoReserva.Nombre</span>
+                                }
+                                else if (item.EstadoReserva?.Nombre == "Pendiente")
+                                {
+                                    <span class="badge bg-warning">@item.EstadoReserva.Nombre</span>
+                                }
+                                else if (item.EstadoReserva?.Nombre == "Completada")
+                                {
+                                    <span class="badge bg-info">@item.EstadoReserva.Nombre</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">@item.EstadoReserva?.Nombre</span>
+                                }
+                            </td>
+                            <td>
+                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i></a>
+                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info"><i class="bi bi-eye"></i></a>
+                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @await Html.PartialAsync("_Pagination")
+</div>

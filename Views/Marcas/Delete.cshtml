@@ -1,0 +1,23 @@
+@model TechRent.Models.Marca
+
+@{
+    ViewData["Title"] = "Eliminar Marca";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-trash text-danger"></i> Eliminar Marca</h1>
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i> ¿Estás seguro de eliminar esta marca?
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5 class="card-title">@Model.Nombre</h5>
+            <p class="card-text">País de origen: @(Model.PaisOrigen ?? "—")</p>
+        </div>
+    </div>
+    <form asp-action="Delete" class="mt-3">
+        <input type="hidden" asp-for="Id" />
+        <button type="submit" class="btn btn-danger"><i class="bi bi-trash"></i> Eliminar</button>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </form>
+</div>

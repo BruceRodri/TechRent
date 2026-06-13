@@ -1,0 +1,66 @@
+@{
+    var totalPages = (int)ViewBag.TotalPages;
+    var pageNumber = (int)ViewBag.PageNumber;
+    var searchString = ViewBag.SearchString as string ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "Index";
+}
+
+@if (totalPages > 1)
+{
+    <div class="mt-4">
+        <nav>
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="@action" asp-route-pageNumber="1" asp-route-searchString="@searchString" title="Primera página">
+                        <i class="bi bi-chevron-double-left"></i>
+                    </a>
+                </li>
+                <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@(pageNumber - 1)" asp-route-searchString="@searchString" title="Anterior">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                </li>
+
+                @{
+                    var startPage = Math.Max(1, pageNumber - 4);
+                    var endPage = Math.Min(totalPages, pageNumber + 4);
+                }
+
+                @if (startPage > 1)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+
+                @for (int i = startPage; i <= endPage; i++)
+                {
+                    <li class="page-item @(i == pageNumber ? "active" : "")">
+                        <a class="page-link" asp-action="@action" asp-route-pageNumber="@i" asp-route-searchString="@searchString">@i</a>
+                    </li>
+                }
+
+                @if (endPage < totalPages)
+                {
+                    <li class="page-item disabled">
+                        <span class="page-link">...</span>
+                    </li>
+                }
+
+                <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@(pageNumber + 1)" asp-route-searchString="@searchString" title="Siguiente">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+                <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
+                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@totalPages" asp-route-searchString="@searchString" title="Última página">
+                        <i class="bi bi-chevron-double-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+        <p class="text-center text-muted">
+            Página @pageNumber de @totalPages — @ViewBag.TotalRegistros registros
+        </p>
+    </div>
+}

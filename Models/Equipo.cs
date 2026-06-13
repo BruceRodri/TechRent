@@ -25,5 +25,6 @@ namespace TechRent.Models
         public Marca Marca { get; set; } = null!;
         // Relación: un equipo puede estar en muchos detalles de reserva
         public ICollection<DetalleReserva> DetalleReservas { get; set; } = new List<DetalleReserva>();
+        public DateTime? FechaEliminacion { get; set; }
     }
 }

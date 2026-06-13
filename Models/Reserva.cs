@@ -34,5 +34,6 @@ namespace TechRent.Models
         // Relaciones: una reserva tiene muchos detalles y muchos pagos
         public ICollection<DetalleReserva> DetalleReservas { get; set; } = new List<DetalleReserva>();
         public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
+        public DateTime? FechaEliminacion { get; set; }
     }
 }

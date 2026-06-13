@@ -1,0 +1,237 @@
+@model TechRent.Models.Reserva
+
+@{
+    ViewData["Title"] = "Nueva Reserva";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-plus-circle"></i> Nueva Reserva</h1>
+    <hr />
+    <div class="row">
+        <div class="col-md-8">
+            <form asp-action="Create" id="reservaForm">
+                <div asp-validation-summary="All" class="text-danger"></div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-person"></i> Cliente</label>
+                    <input type="text" id="clienteSearch" class="form-control" placeholder="Escriba el nombre del cliente..." autocomplete="off" />
+                    <input type="hidden" asp-for="ClienteId" id="ClienteId" />
+                    <div id="clienteResults" class="list-group" style="position:absolute;z-index:1000;width:100%;display:none;max-height:250px;overflow-y:auto;"></div>
+                    <small id="clienteSelected" class="text-success fw-bold"></small>
+                    <span asp-validation-for="ClienteId" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="EstadoReservaId" class="form-label fw-bold"><i class="bi bi-flag"></i> Estado</label>
+                    <select asp-for="EstadoReservaId" class="form-control" asp-items="ViewBag.EstadoReservaId"></select>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-5">
+                        <label asp-for="FechaInicio" class="form-label fw-bold"><i class="bi bi-calendar"></i> Fecha Inicio</label>
+                        <input asp-for="FechaInicio" class="form-control" type="date" id="FechaInicio" />
+                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-5">
+                        <label asp-for="FechaFin" class="form-label fw-bold"><i class="bi bi-calendar"></i> Fecha Fin</label>
+                        <input asp-for="FechaFin" class="form-control" type="date" id="FechaFin" />
+                        <span asp-validation-for="FechaFin" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-2 d-flex align-items-end">
+                        <div class="form-control-plaintext fw-bold" id="diasCalculo">0 días</div>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label fw-bold"><i class="bi bi-box"></i> Equipos Disponibles</label>
+                    <input type="text" id="equipoSearch" class="form-control mb-2" placeholder="Buscar equipo por nombre..." />
+                    <div id="equiposContainer" style="max-height:350px;overflow-y:auto;border:1px solid #dee2e6;border-radius:0.25rem;padding:0.5rem;">
+                        <div class="text-center text-muted py-3" id="equiposLoading">Cargando equipos...</div>
+                    </div>
+                </div>
+
+                <div class="card bg-light mb-3">
+                    <div class="card-body text-end">
+                        <h4 class="mb-0">Total: <span id="montoTotal" class="text-success">$0.00</span></h4>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label asp-for="Observaciones" class="form-label fw-bold"><i class="bi bi-chat"></i> Observaciones</label>
+                    <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
+                    <span asp-validation-for="Observaciones" class="text-danger"></span>
+                </div>
+
+                <div class="mb-3">
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
+                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        let selectedEquipos = new Map();
+        let clienteTimeout;
+        let equipoTimeout;
+
+        function calcularTotal() {
+            const fechaInicio = document.getElementById('FechaInicio').value;
+            const fechaFin = document.getElementById('FechaFin').value;
+            let totalDias = 0;
+
+            if (fechaInicio && fechaFin) {
+                const fi = new Date(fechaInicio);
+                const ff = new Date(fechaFin);
+                const diff = Math.floor((ff - fi) / (1000 * 60 * 60 * 24));
+                if (diff > 0) totalDias = diff;
+            }
+
+            document.getElementById('diasCalculo').textContent = totalDias + (totalDias === 1 ? ' día' : ' días');
+
+            let total = 0;
+            selectedEquipos.forEach((item) => {
+                total += item.cantidad * item.precio * totalDias;
+            });
+
+            document.getElementById('montoTotal').textContent = '$' + total.toFixed(2);
+        }
+
+        document.getElementById('FechaInicio').addEventListener('change', calcularTotal);
+        document.getElementById('FechaFin').addEventListener('change', calcularTotal);
+
+        document.getElementById('clienteSearch').addEventListener('input', function() {
+            clearTimeout(clienteTimeout);
+            const term = this.value.trim();
+            if (term.length < 2) {
+                document.getElementById('clienteResults').style.display = 'none';
+                return;
+            }
+            clienteTimeout = setTimeout(() => {
+                fetch(`/Reservas/GetClientes?term=${encodeURIComponent(term)}`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const results = document.getElementById('clienteResults');
+                        results.innerHTML = '';
+                        if (data.length === 0) {
+                            results.style.display = 'none';
+                            return;
+                        }
+                        data.forEach(c => {
+                            const item = document.createElement('a');
+                            item.className = 'list-group-item list-group-item-action';
+                            item.href = '#';
+                            item.innerHTML = `<strong>${c.nombre}</strong><br /><small>${c.email}</small>`;
+                            item.addEventListener('click', function(e) {
+                                e.preventDefault();
+                                document.getElementById('ClienteId').value = c.id;
+                                document.getElementById('clienteSearch').value = c.nombre;
+                                document.getElementById('clienteSelected').textContent = 'Cliente seleccionado: ' + c.nombre;
+                                results.style.display = 'none';
+                            });
+                            results.appendChild(item);
+                        });
+                        results.style.display = 'block';
+                    });
+            }, 300);
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('#clienteSearch') && !e.target.closest('#clienteResults')) {
+                document.getElementById('clienteResults').style.display = 'none';
+            }
+        });
+
+        function cargarEquipos(term) {
+            const url = term ? `/Reservas/GetEquiposDisponibles?term=${encodeURIComponent(term)}` : '/Reservas/GetEquiposDisponibles';
+            fetch(url)
+                .then(r => r.json())
+                .then(data => {
+                    const container = document.getElementById('equiposContainer');
+                    container.innerHTML = '';
+                    if (data.length === 0) {
+                        container.innerHTML = '<div class="text-center text-muted py-3">No se encontraron equipos</div>';
+                        return;
+                    }
+                    data.forEach(eq => {
+                        const div = document.createElement('div');
+                        div.className = 'form-check py-1 border-bottom';
+                        const checked = selectedEquipos.has(eq.id) ? 'checked' : '';
+                        div.innerHTML = `
+                            <input type="checkbox" class="form-check-input equipo-check" value="${eq.id}" data-id="${eq.id}" data-nombre="${eq.nombre}" data-precio="${eq.precioPorDia}" ${checked}>
+                            <label class="form-check-label w-100">
+                                <strong>${eq.nombre}</strong>
+                                <span class="text-muted"> - ${eq.marca} / ${eq.categoria}</span>
+                                <span class="float-end">
+                                    <span class="text-success fw-bold">$${eq.precioPorDia.toFixed(2)}/día</span>
+                                    <span class="badge bg-secondary ms-2">Stock: ${eq.stock}</span>
+                                </span>
+                            </label>
+                            <div class="ms-4 mt-1" style="${checked ? '' : 'display:none;'}" id="qtyContainer_${eq.id}">
+                                <label class="small">Cantidad: </label>
+                                <input type="number" class="form-control form-control-sm d-inline-block" style="width:80px;" value="${selectedEquipos.get(eq.id)?.cantidad || 1}" min="1" max="${eq.stock}" data-equipo-id="${eq.id}" />
+                            </div>
+                        `;
+                        container.appendChild(div);
+
+                        const checkbox = div.querySelector('.equipo-check');
+                        const qtyContainer = div.querySelector(`#qtyContainer_${eq.id}`);
+                        const qtyInput = div.querySelector('input[type="number"]');
+
+                        checkbox.addEventListener('change', function() {
+                            if (this.checked) {
+                                qtyContainer.style.display = 'block';
+                                const qty = parseInt(qtyInput.value) || 1;
+                                selectedEquipos.set(eq.id, { nombre: eq.nombre, precio: eq.precioPorDia, cantidad: qty });
+                            } else {
+                                qtyContainer.style.display = 'none';
+                                selectedEquipos.delete(eq.id);
+                            }
+                            actualizarHiddenFields();
+                            calcularTotal();
+                        });
+
+                        qtyInput.addEventListener('change', function() {
+                            const qty = parseInt(this.value) || 1;
+                            if (selectedEquipos.has(eq.id)) {
+                                selectedEquipos.get(eq.id).cantidad = qty;
+                                actualizarHiddenFields();
+                                calcularTotal();
+                            }
+                        });
+                    });
+                });
+        }
+
+        function actualizarHiddenFields() {
+            let existing = document.querySelectorAll('.hidden-equipo, .hidden-cantidad');
+            existing.forEach(el => el.remove());
+
+            selectedEquipos.forEach((item, equipoId) => {
+                const inpId = document.createElement('input');
+                inpId.type = 'hidden';
+                inpId.name = 'equipoIds';
+                inpId.value = equipoId;
+                inpId.className = 'hidden-equipo';
+                document.getElementById('reservaForm').appendChild(inpId);
+
+                const inpQty = document.createElement('input');
+                inpQty.type = 'hidden';
+                inpQty.name = 'cantidades';
+                inpQty.value = item.cantidad;
+                inpQty.className = 'hidden-cantidad';
+                document.getElementById('reservaForm').appendChild(inpQty);
+            });
+        }
+
+        document.getElementById('equipoSearch').addEventListener('input', function() {
+            clearTimeout(equipoTimeout);
+            equipoTimeout = setTimeout(() => cargarEquipos(this.value.trim()), 300);
+        });
+
+        cargarEquipos('');
+    </script>
+}

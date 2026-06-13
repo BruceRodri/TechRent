@@ -1,0 +1,107 @@
+@model TechRent.Models.Reserva
+
+@{
+    ViewData["Title"] = "Detalle de Reserva";
+}
+
+<div class="container mt-4">
+    <h1><i class="bi bi-eye"></i> Detalle de Reserva</h1>
+    <hr />
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-info-circle"></i> Información General</div>
+                <div class="card-body">
+                    <p><strong>Cliente:</strong> @Model.Cliente?.NombreCompleto</p>
+                    <p><strong>Estado:</strong>
+                        @if (Model.EstadoReserva?.Nombre == "Activa")
+                        { <span class="badge bg-success">@Model.EstadoReserva.Nombre</span> }
+                        else if (Model.EstadoReserva?.Nombre == "Pendiente")
+                        { <span class="badge bg-warning">@Model.EstadoReserva.Nombre</span> }
+                        else if (Model.EstadoReserva?.Nombre == "Completada")
+                        { <span class="badge bg-info">@Model.EstadoReserva.Nombre</span> }
+                        else
+                        { <span class="badge bg-danger">@Model.EstadoReserva?.Nombre</span> }
+                    </p>
+                    <p><strong>Fecha Inicio:</strong> @Model.FechaInicio.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Fecha Fin:</strong> @Model.FechaFin.ToString("dd/MM/yyyy")</p>
+                    <p><strong>Monto Total:</strong> <span class="text-success fw-bold">$@Model.MontoTotal.ToString("0.00")</span></p>
+                    <p><strong>Observaciones:</strong> @(Model.Observaciones ?? "—")</p>
+                    <p><strong>Fecha Creación:</strong> @Model.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-box"></i> Equipos Reservados</div>
+                <div class="card-body">
+                    @if (Model.DetalleReservas != null && Model.DetalleReservas.Any())
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Equipo</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio/Día</th>
+                                    <th>Días</th>
+                                    <th>Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var det in Model.DetalleReservas)
+                                {
+                                    <tr>
+                                        <td>@det.Equipo?.Nombre</td>
+                                        <td>@det.Cantidad</td>
+                                        <td>$@det.PrecioUnitarioPorDia.ToString("0.00")</td>
+                                        <td>@det.CantidadDias</td>
+                                        <td>$@det.Subtotal.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Sin equipos registrados</p>
+                    }
+                </div>
+            </div>
+            <div class="card mb-3">
+                <div class="card-header"><i class="bi bi-credit-card"></i> Pagos</div>
+                <div class="card-body">
+                    @if (Model.Pagos != null && Model.Pagos.Any())
+                    {
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Monto</th>
+                                    <th>Método</th>
+                                    <th>Fecha</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var p in Model.Pagos)
+                                {
+                                    <tr>
+                                        <td>$@p.Monto.ToString("0.00")</td>
+                                        <td>@p.MetodoPago</td>
+                                        <td>@p.FechaPago.ToString("dd/MM/yyyy")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    }
+                    else
+                    {
+                        <p class="text-muted">Sin pagos registrados</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mt-3">
+        <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary"><i class="bi bi-pencil"></i> Editar</a>
+        <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
+    </div>
+</div>

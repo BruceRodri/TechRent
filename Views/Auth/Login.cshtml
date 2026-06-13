@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Iniciar Sesión";
+}
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card shadow-lg">
+                <div class="card-header text-center bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="bi bi-laptop"></i> TechRent</h4>
+                    <small>Inicia sesión para continuar</small>
+                </div>
+                <div class="card-body p-4">
+                    @if (!string.IsNullOrEmpty(ViewBag.Error))
+                    {
+                        <div class="alert alert-danger">@ViewBag.Error</div>
+                    }
+                    <form method="post" asp-action="Login">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                            <input type="email" name="email" class="form-control" required placeholder="admin@techrent.com" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-lock"></i> Contraseña</label>
+                            <input type="password" name="password" class="form-control" required placeholder="123456" />
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="bi bi-box-arrow-in-right"></i> Ingresar
+                        </button>
+                    </form>
+                </div>
+                <div class="card-footer text-muted text-center">
+                    <small>Credenciales: admin@techrent.com / 123456</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

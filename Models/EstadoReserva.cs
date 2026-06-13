@@ -19,5 +19,6 @@ namespace TechRent.Models
 
         // Relación: un estado puede tener muchas reservas
         public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
+        public DateTime? FechaEliminacion { get; set; }
     }
 }
