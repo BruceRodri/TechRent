@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -6,6 +7,7 @@ using TechRent.Models;
 
 namespace TechRent.Controllers
 {
+    [Authorize]
     public class ReservasController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,17 +17,8 @@ namespace TechRent.Controllers
             _context = context;
         }
 
-        private IActionResult? VerificarSesion()
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Login", "Auth");
-            return null;
-        }
-
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
 
             int pageSize = 20;
             var query = _context.Reservas
@@ -52,7 +45,6 @@ namespace TechRent.Controllers
 
             ViewBag.TotalRegistros = totalRegistros;
             ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
             ViewBag.SearchString = searchString;
 
@@ -61,8 +53,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Reservas
                 .Include(r => r.Cliente)
@@ -77,10 +67,7 @@ namespace TechRent.Controllers
 
         public IActionResult Create()
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             ViewData["EstadoReservaId"] = new SelectList(_context.EstadosReserva.Where(e => e.Activo), "Id", "Nombre");
-            ViewBag.Clientes = _context.Clientes.Where(c => c.Activo).OrderBy(c => c.NombreCompleto).Take(20).ToList();
             return View();
         }
 
@@ -88,9 +75,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Reserva reserva)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             ModelState.Remove("FechaCreacion");
             ModelState.Remove("MontoTotal");
             ModelState.Remove("Cliente");
@@ -231,8 +215,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Reservas
                 .Include(r => r.Cliente)
@@ -240,7 +222,6 @@ namespace TechRent.Controllers
                 .ThenInclude(d => d.Equipo)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (item == null) return NotFound();
-            ViewData["ClienteId"] = new SelectList(_context.Clientes.Where(c => c.Activo), "Id", "NombreCompleto", item.ClienteId);
             ViewData["EstadoReservaId"] = new SelectList(_context.EstadosReserva.Where(e => e.Activo), "Id", "Nombre", item.EstadoReservaId);
             return View(item);
         }
@@ -249,8 +230,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Reserva reserva)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id != reserva.Id) return NotFound();
 
             ModelState.Remove("FechaCreacion");
@@ -267,7 +246,6 @@ namespace TechRent.Controllers
                 if (cantidadDias <= 0)
                 {
                     ModelState.AddModelError("FechaFin", "La fecha fin debe ser posterior a la fecha inicio");
-                    ViewData["ClienteId"] = new SelectList(_context.Clientes.Where(c => c.Activo), "Id", "NombreCompleto", reserva.ClienteId);
                     ViewData["EstadoReservaId"] = new SelectList(_context.EstadosReserva.Where(e => e.Activo), "Id", "Nombre", reserva.EstadoReservaId);
                     return View(reserva);
                 }
@@ -332,15 +310,12 @@ namespace TechRent.Controllers
             if (!tieneEquipos)
                 ModelState.AddModelError("", "Debe seleccionar al menos un equipo");
 
-            ViewData["ClienteId"] = new SelectList(_context.Clientes.Where(c => c.Activo), "Id", "NombreCompleto", reserva.ClienteId);
             ViewData["EstadoReservaId"] = new SelectList(_context.EstadosReserva.Where(e => e.Activo), "Id", "Nombre", reserva.EstadoReservaId);
             return View(reserva);
         }
 
         public async Task<IActionResult> Delete(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Reservas
                 .Include(r => r.Cliente)
@@ -354,8 +329,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             var item = await _context.Reservas.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == id);
             if (item != null)
             {

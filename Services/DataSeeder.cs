@@ -1,8 +1,6 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
+using NpgsqlTypes;
 using TechRent.Data;
 using TechRent.Models;
 
@@ -258,97 +256,79 @@ namespace TechRent.Services
             {
                 var reservas = await _context.Reservas.ToListAsync();
                 var equiposList = await _context.Equipos.ToListAsync();
-                var detalles = new List<DetalleReserva>();
                 var random = new Random();
                 var totalRequerido = 239966;
-                var contador = 0;
-                var stockDict = equiposList.ToDictionary(e => e.Id, e => e.Stock);
-                var actualizarStock = new Dictionary<int, int>();
 
+                var detalles = new List<DetalleReserva>(totalRequerido);
                 for (int i = 1; i <= totalRequerido; i++)
                 {
-                    var equipoValido = equiposList.Where(e => stockDict[e.Id] > 0).ToList();
-                    if (equipoValido.Count == 0) break;
-
-                    var equipo = equipoValido[random.Next(equipoValido.Count)];
-                    var cantidad = Math.Min(random.Next(1, 5), stockDict[equipo.Id]);
-                    stockDict[equipo.Id] -= cantidad;
-                    actualizarStock[equipo.Id] = stockDict[equipo.Id];
-
+                    var idx = random.Next(equiposList.Count);
+                    var equipo = equiposList[idx];
+                    var cantidad = random.Next(1, 5);
                     var dias = random.Next(1, 15);
-                    var subtotal = cantidad * equipo.PrecioPorDia * dias;
                     detalles.Add(new DetalleReserva
                     {
                         Cantidad = cantidad,
                         PrecioUnitarioPorDia = equipo.PrecioPorDia,
                         CantidadDias = dias,
-                        Subtotal = subtotal,
+                        Subtotal = cantidad * equipo.PrecioPorDia * dias,
                         ReservaId = reservas[random.Next(reservas.Count)].Id,
                         EquipoId = equipo.Id,
                         FechaCreacion = DateTime.UtcNow
                     });
-
-                    contador++;
-                    if (contador % 20000 == 0)
-                    {
-                        await _context.DetalleReservas.AddRangeAsync(detalles);
-                        await _context.SaveChangesAsync();
-                        detalles.Clear();
-
-                        foreach (var kvp in actualizarStock)
-                        {
-                            var dbEquipo = await _context.Equipos.FindAsync(kvp.Key);
-                            if (dbEquipo != null)
-                                dbEquipo.Stock = Math.Max(0, kvp.Value);
-                        }
-                        await _context.SaveChangesAsync();
-                        Console.WriteLine($"DetalleReservas: {contador} de {totalRequerido} insertados");
-                    }
                 }
 
-                if (detalles.Any())
+                var connString = _context.Database.GetConnectionString();
+                await using var conn = new NpgsqlConnection(connString);
+                await conn.OpenAsync();
+
+                await using var writer = await conn.BeginBinaryImportAsync(
+                    """
+                    COPY "DetalleReservas" ("Cantidad", "PrecioUnitarioPorDia", "CantidadDias", "Subtotal", "ReservaId", "EquipoId", "FechaCreacion")
+                    FROM STDIN (FORMAT BINARY)
+                    """);
+
+                foreach (var d in detalles)
                 {
-                    await _context.DetalleReservas.AddRangeAsync(detalles);
-                    await _context.SaveChangesAsync();
-
-                    foreach (var kvp in actualizarStock)
-                    {
-                        var dbEquipo = await _context.Equipos.FindAsync(kvp.Key);
-                        if (dbEquipo != null)
-                            dbEquipo.Stock = Math.Max(0, kvp.Value);
-                    }
-                    await _context.SaveChangesAsync();
+                    await writer.StartRowAsync();
+                    await writer.WriteAsync(d.Cantidad);
+                    await writer.WriteAsync(d.PrecioUnitarioPorDia);
+                    await writer.WriteAsync(d.CantidadDias);
+                    await writer.WriteAsync(d.Subtotal);
+                    await writer.WriteAsync(d.ReservaId);
+                    await writer.WriteAsync(d.EquipoId);
+                    await writer.WriteAsync(d.FechaCreacion, NpgsqlDbType.TimestampTz);
                 }
+                await writer.CompleteAsync();
 
-                // Recalcular MontoTotal de cada reserva según sus detalles
-                foreach (var reserva in reservas)
-                {
-                    var sumaDetalles = await _context.DetalleReservas
-                        .Where(d => d.ReservaId == reserva.Id)
-                        .SumAsync(d => d.Subtotal);
-                    if (sumaDetalles > 0 && reserva.MontoTotal != sumaDetalles)
-                    {
-                        reserva.MontoTotal = sumaDetalles;
-                    }
-                }
-                await _context.SaveChangesAsync();
+                Console.WriteLine($"DetalleReservas: {detalles.Count} insertados vía COPY");
+
+                await _context.Database.ExecuteSqlRawAsync("""
+                    UPDATE "Equipos" e
+                    SET "Stock" = GREATEST(0, e."Stock" - COALESCE(d.TotalReservado, 0))
+                    FROM (
+                        SELECT d."EquipoId", SUM(d."Cantidad") AS TotalReservado
+                        FROM "DetalleReservas" d
+                        GROUP BY d."EquipoId"
+                    ) d
+                    WHERE e."Id" = d."EquipoId"
+                    """);
+
+                await _context.Database.ExecuteSqlRawAsync("""
+                    UPDATE "Reservas" r
+                    SET "MontoTotal" = COALESCE(d.TotalSubtotal, 0)
+                    FROM (
+                        SELECT d."ReservaId", SUM(d."Subtotal") AS TotalSubtotal
+                        FROM "DetalleReservas" d
+                        GROUP BY d."ReservaId"
+                    ) d
+                    WHERE r."Id" = d."ReservaId"
+                    """);
+
+                Console.WriteLine("Stock y MontoTotal actualizados exitosamente vía SQL");
             }
 
-            // 8. Usuario administrador
-            if (!await _context.Usuarios.AnyAsync())
-            {
-                var admin = new Usuario
-                {
-                    NombreCompleto = "Administrador",
-                    Email = "admin@techrent.com",
-                    Password = "123456",
-                    Activo = true,
-                    FechaCreacion = DateTime.UtcNow
-                };
-                _context.Usuarios.Add(admin);
-                await _context.SaveChangesAsync();
-                Console.WriteLine("Usuario admin creado");
-            }
+            // 8. Identity users are seeded by IdentitySeeder in Program.cs
 
             // Mostrar total de registros
             var totalCategorias = await _context.Categorias.CountAsync();

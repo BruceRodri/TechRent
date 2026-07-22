@@ -1,0 +1,92 @@
+@model TechRent.Models.OrdenAlquiler
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+
+@{
+    var paypalClientId = Configuration["PayPal:ClientId"];
+    ViewData["Title"] = "Pago con PayPal";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="bi bi-paypal"></i> Pago con PayPal Sandbox</h4>
+                </div>
+                <div class="card-body p-4">
+                    <div class="mb-3">
+                        <p><strong>Orden:</strong> #@Model.Id</p>
+                        <p><strong>Total:</strong> <span class="text-success fs-4">$@Model.Total.ToString("0.00")</span></p>
+                        <p><strong>Estado:</strong> <span class="badge bg-warning">@Model.Estado</span></p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Botón oficial de PayPal embebido. Desde Sandbox puedes probar con cuenta Sandbox o tarjeta de prueba.
+                    </div>
+
+                    <div id="paypal-button-container" class="my-3"></div>
+                    <div id="paypal-message"></div>
+
+                    <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary mt-3">
+                        <i class="bi bi-arrow-left"></i> Volver al carrito
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://www.paypal.com/sdk/js?client-id=@paypalClientId&currency=USD&components=buttons&enable-funding=card"></script>
+
+    <script>
+        let transaccionPagoId = 0;
+
+        function showMessage(message, type) {
+            document.getElementById('paypal-message').innerHTML =
+                '<div class="alert alert-' + type + '">' + message + '</div>';
+        }
+
+        paypal.Buttons({
+            createOrder: function () {
+                return fetch('/Pago/CreatePayPalButtonOrderJson?ordenId=@Model.Id', { method: 'POST' })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (!data.success) {
+                            showMessage(data.message, 'danger');
+                            throw new Error(data.message);
+                        }
+                        transaccionPagoId = data.transaccionPagoId;
+                        return data.paypalOrderId;
+                    });
+            },
+            onApprove: function (data) {
+                return fetch('/Pago/CapturePayPalButtonOrderJson', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        paypalOrderId: data.orderID,
+                        transaccionPagoId: transaccionPagoId
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = data.redirectUrl;
+                    } else {
+                        showMessage(data.message, 'danger');
+                    }
+                });
+            },
+            onCancel: function () {
+                showMessage('Pago cancelado por el usuario.', 'warning');
+            },
+            onError: function (err) {
+                console.error(err);
+                showMessage('Ocurrió un error con PayPal.', 'danger');
+            }
+        }).render('#paypal-button-container');
+    </script>
+}

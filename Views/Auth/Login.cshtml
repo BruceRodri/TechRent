@@ -15,22 +15,39 @@
                     {
                         <div class="alert alert-danger">@ViewBag.Error</div>
                     }
-                    <form method="post" asp-action="Login">
+                    <form method="post" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]">
                         <div class="mb-3">
                             <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
                             <input type="email" name="email" class="form-control" required placeholder="admin@techrent.com" />
                         </div>
                         <div class="mb-3">
                             <label class="form-label"><i class="bi bi-lock"></i> Contraseña</label>
-                            <input type="password" name="password" class="form-control" required placeholder="123456" />
+                            <input type="password" name="password" class="form-control" required placeholder="Admin@123" />
                         </div>
                         <button type="submit" class="btn btn-primary w-100">
                             <i class="bi bi-box-arrow-in-right"></i> Ingresar
                         </button>
                     </form>
+
+                    <div class="divider my-3">
+                        <span class="text-muted">O continúa con</span>
+                    </div>
+
+                    <form asp-action="ExternalLogin" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                        <input type="hidden" name="provider" value="Google" />
+                        <button type="submit" class="btn btn-outline-danger w-100">
+                            <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align: middle; margin-right: 8px;">
+                                <path fill="#4285F4" d="M47.532 24.552c0-1.632-.142-3.2-.422-4.704H24.48v8.91h12.964c-.56 2.992-2.25 5.536-4.8 7.242v6.024h7.764c4.542-4.184 7.168-10.336 7.168-17.472z"/>
+                                <path fill="#34A853" d="M24.48 48c6.48 0 11.908-2.144 15.876-5.784l-7.764-6.024c-2.144 1.424-4.88 2.264-8.112 2.264-6.24 0-11.536-4.208-13.424-9.872H3.102v6.216C7.078 42.656 15.222 48 24.48 48z"/>
+                                <path fill="#FBBC05" d="M11.056 28.584c-.48-1.424-.752-2.944-.752-4.584s.272-3.16.752-4.584v-6.216H3.102C1.104 17.064 0 20.392 0 24s1.104 6.936 3.102 9.936l7.954-5.352z"/>
+                                <path fill="#EA4335" d="M24.48 9.544c3.52 0 6.68 1.216 9.168 3.584l6.864-6.864C36.364 2.12 30.948 0 24.48 0 15.222 0 7.078 5.344 3.102 14.064l7.954 5.352c1.888-5.664 7.184-9.872 13.424-9.872z"/>
+                            </svg>
+                            Google
+                        </button>
+                    </form>
                 </div>
                 <div class="card-footer text-muted text-center">
-                    <small>Credenciales: admin@techrent.com / 123456</small>
+                    <small>No tienes cuenta? <a asp-area="Identity" asp-page="/Account/Register" class="fw-bold">Registrate</a></small>
                 </div>
             </div>
         </div>

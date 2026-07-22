@@ -22,6 +22,9 @@ namespace TechRent.Models
         public decimal Subtotal { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaActualizacion { get; set; }
+
+        public bool Activo { get; set; } = true;
 
         // Llaves foráneas
         public int ReservaId { get; set; }

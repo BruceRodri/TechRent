@@ -1,15 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
 
 namespace TechRent.Controllers
 {
+    [Authorize]
     public class ClientesController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,17 +16,8 @@ namespace TechRent.Controllers
             _context = context;
         }
 
-        private IActionResult? VerificarSesion()
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Login", "Auth");
-            return null;
-        }
-
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
 
             int pageSize = 20;
             var query = _context.Clientes.AsNoTracking().Where(c => c.Activo);
@@ -56,7 +44,6 @@ namespace TechRent.Controllers
             ViewBag.ClientesConEmail = clientesConEmail;
             ViewBag.ClientesConTelefono = clientesConTelefono;
             ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
             ViewBag.SearchString = searchString;
 
@@ -65,9 +52,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var cliente = await _context.Clientes.FirstOrDefaultAsync(m => m.Id == id);
             if (cliente == null) return NotFound();
@@ -76,8 +60,6 @@ namespace TechRent.Controllers
 
         public IActionResult Create()
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             return View();
         }
 
@@ -85,9 +67,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Cliente cliente)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             ModelState.Remove("FechaCreacion");
 
             if (ModelState.IsValid)
@@ -102,9 +81,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var cliente = await _context.Clientes.FindAsync(id);
             if (cliente == null) return NotFound();
@@ -115,9 +91,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Cliente cliente)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id != cliente.Id) return NotFound();
 
             ModelState.Remove("FechaCreacion");
@@ -151,9 +124,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var cliente = await _context.Clientes.FirstOrDefaultAsync(m => m.Id == id);
             if (cliente == null) return NotFound();
@@ -164,9 +134,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             var cliente = await _context.Clientes.FindAsync(id);
             if (cliente != null)
             {

@@ -1,11 +1,12 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
 
 namespace TechRent.Controllers
 {
+    [Authorize]
     public class MarcasController : Controller
     {
         private readonly AppDbContext _context;
@@ -15,17 +16,8 @@ namespace TechRent.Controllers
             _context = context;
         }
 
-        private IActionResult? VerificarSesion()
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Login", "Auth");
-            return null;
-        }
-
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
 
             int pageSize = 20;
             var query = _context.Marcas.AsNoTracking().Where(m => m.Activo);
@@ -46,7 +38,6 @@ namespace TechRent.Controllers
 
             ViewBag.TotalRegistros = totalRegistros;
             ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
             ViewBag.SearchString = searchString;
 
@@ -55,8 +46,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Marcas.FirstOrDefaultAsync(m => m.Id == id);
             if (item == null) return NotFound();
@@ -65,8 +54,6 @@ namespace TechRent.Controllers
 
         public IActionResult Create()
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             return View();
         }
 
@@ -74,9 +61,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(Marca marca)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             ModelState.Remove("FechaCreacion");
 
             if (ModelState.IsValid)
@@ -91,8 +75,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Marcas.FindAsync(id);
             if (item == null) return NotFound();
@@ -103,8 +85,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Marca marca)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id != marca.Id) return NotFound();
 
             ModelState.Remove("FechaCreacion");
@@ -135,8 +115,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             if (id == null) return NotFound();
             var item = await _context.Marcas.FirstOrDefaultAsync(m => m.Id == id);
             if (item == null) return NotFound();
@@ -147,8 +125,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
             var item = await _context.Marcas.IgnoreQueryFilters().FirstOrDefaultAsync(m => m.Id == id);
             if (item != null)
             {

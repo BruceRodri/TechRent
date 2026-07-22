@@ -1,0 +1,99 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Registrarse";
+}
+
+<div class="login-container">
+    <div class="login-card">
+        <div class="login-header">
+            <div class="login-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" viewBox="0 0 16 16">
+                    <path d="M13 1a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h10zM3 0a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V3a3 3 0 0 0-3-3H3z"/>
+                    <path d="M5.5 8a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zm-2.5 4v.5a.5.5 0 0 0 .5.5h6a.5.5 0 0 0 .5-.5V12a2.5 2.5 0 0 0-5 0H3z"/>
+                </svg>
+            </div>
+            <h2>Crear Cuenta</h2>
+            <p class="text-muted">Registrate para acceder a TechRent</p>
+        </div>
+
+        <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <label asp-for="Input.Email">Correo electronico</label>
+                <span asp-validation-for="Input.Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <label asp-for="Input.Password">Contrasena</label>
+                <span asp-validation-for="Input.Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-floating mb-3">
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <label asp-for="Input.ConfirmPassword">Confirmar Contrasena</label>
+                <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Input.SelectedRole" class="form-label fw-semibold"></label>
+                <select asp-for="Input.SelectedRole" class="form-select" asp-items="Model.RolesList">
+                    <option value="">-- Selecciona un rol --</option>
+                </select>
+                <span asp-validation-for="Input.SelectedRole" class="text-danger"></span>
+                <div class="form-text text-muted small">Elige el rol que se te asignara en el sistema.</div>
+            </div>
+
+            <button id="registerSubmit" type="submit" class="btn btn-primary btn-login w-100">
+                Registrarse
+            </button>
+        </form>
+
+        @if (Model.ExternalLogins?.Count > 0)
+        {
+            <div class="divider">
+                <span>O regístrate con</span>
+            </div>
+
+            <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                <div class="d-grid gap-2">
+                    @foreach (var provider in Model.ExternalLogins!)
+                    {
+                        if (provider.Name == "Google")
+                        {
+                            <button type="submit" class="btn btn-outline-google" name="provider" value="@provider.Name" title="Registrate con tu cuenta de Google">
+                                <svg width="20" height="20" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill="#4285F4" d="M47.532 24.552c0-1.632-.142-3.2-.422-4.704H24.48v8.91h12.964c-.56 2.992-2.25 5.536-4.8 7.242v6.024h7.764c4.542-4.184 7.168-10.336 7.168-17.472z"/>
+                                    <path fill="#34A853" d="M24.48 48c6.48 0 11.908-2.144 15.876-5.784l-7.764-6.024c-2.144 1.424-4.88 2.264-8.112 2.264-6.24 0-11.536-4.208-13.424-9.872H3.102v6.216C7.078 42.656 15.222 48 24.48 48z"/>
+                                    <path fill="#FBBC05" d="M11.056 28.584c-.48-1.424-.752-2.944-.752-4.584s.272-3.16.752-4.584v-6.216H3.102C1.104 17.064 0 20.392 0 24s1.104 6.936 3.102 9.936l7.954-5.352z"/>
+                                    <path fill="#EA4335" d="M24.48 9.544c3.52 0 6.68 1.216 9.168 3.584l6.864-6.864C36.364 2.12 30.948 0 24.48 0 15.222 0 7.078 5.344 3.102 14.064l7.954 5.352c1.888-5.664 7.184-9.872 13.424-9.872z"/>
+                                </svg>
+                                Google
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn btn-outline-secondary" name="provider" value="@provider.Name" title="Registrate con tu cuenta de @provider.DisplayName">
+                                @provider.DisplayName
+                            </button>
+                        }
+                    }
+                </div>
+            </form>
+        }
+
+        <div class="login-footer">
+            <p class="mb-0">
+                Ya tienes una cuenta?
+                <a asp-page="./Login" asp-route-returnUrl="@Model.ReturnUrl" class="fw-bold">Inicia sesion</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

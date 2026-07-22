@@ -108,6 +108,17 @@
                                 <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
                                     <i class="bi bi-eye"></i>
                                 </a>
+                                @if (item.Stock > 0)
+                                {
+                                    <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline">
+                                        <input type="hidden" name="equipoId" value="@item.Id" />
+                                        <input type="hidden" name="cantidad" value="1" />
+                                        <input type="hidden" name="dias" value="1" />
+                                        <button type="submit" class="btn btn-sm btn-success" title="Agregar al carrito">
+                                            <i class="bi bi-cart-plus"></i>
+                                        </button>
+                                    </form>
+                                }
                                 <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
                                     <i class="bi bi-trash"></i>
                                 </a>

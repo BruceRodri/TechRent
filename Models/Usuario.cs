@@ -20,6 +20,7 @@ namespace TechRent.Models
         public bool Activo { get; set; } = true;
 
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+        public DateTime? FechaActualizacion { get; set; }
 
         public DateTime? FechaEliminacion { get; set; }
     }

@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +7,7 @@ using TechRent.Models;
 
 namespace TechRent.Controllers
 {
+    [Authorize]
     public class EquiposController : Controller
     {
         private readonly AppDbContext _context;
@@ -19,17 +17,8 @@ namespace TechRent.Controllers
             _context = context;
         }
 
-        private IActionResult? VerificarSesion()
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Login", "Auth");
-            return null;
-        }
-
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
 
             int pageSize = 20;
             var query = _context.Equipos
@@ -67,7 +56,6 @@ namespace TechRent.Controllers
             ViewBag.TotalStock = totalStock;
             ViewBag.PrecioPromedio = precioPromedio;
             ViewBag.PageNumber = pageNumber;
-            ViewBag.PageSize = pageSize;
             ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
             ViewBag.SearchString = searchString;
 
@@ -76,9 +64,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Details(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var equipo = await _context.Equipos
                 .Include(e => e.Categoria)
@@ -90,9 +75,6 @@ namespace TechRent.Controllers
 
         public IActionResult Create()
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nombre");
             ViewData["MarcaId"] = new SelectList(_context.Marcas, "Id", "Nombre");
             return View();
@@ -102,16 +84,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(bool? _ = null)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
-            // DEBUG: log all form values
-            Console.WriteLine("=== DEBUG Equipos Create ===");
-            foreach (var key in Request.Form.Keys)
-            {
-                Console.WriteLine($"  {key}: {Request.Form[key]}");
-            }
-
             var nombre = Request.Form["Nombre"].ToString();
             var descripcion = Request.Form["Descripcion"].ToString();
             var precioStr = Request.Form["PrecioPorDia"].ToString();
@@ -121,16 +93,11 @@ namespace TechRent.Controllers
             var categoriaIdStr = Request.Form["CategoriaId"].ToString();
             var marcaIdStr = Request.Form["MarcaId"].ToString();
 
-            Console.WriteLine($"  Parsed: CategoriaId='{categoriaIdStr}', MarcaId='{marcaIdStr}'");
-
             bool precioOk = decimal.TryParse(precioStr, System.Globalization.NumberStyles.Any,
                 System.Globalization.CultureInfo.InvariantCulture, out var precio);
             bool stockOk = int.TryParse(stockStr, out var stock);
             bool catOk = int.TryParse(categoriaIdStr, out var categoriaId);
             bool marOk = int.TryParse(marcaIdStr, out var marcaId);
-
-            Console.WriteLine($"  Parsed: catOk={catOk}, categoriaId={categoriaId}, marOk={marOk}, marcaId={marcaId}");
-            Console.WriteLine($"  Parsed: precioOk={precioOk}, precio={precio}, stockOk={stockOk}, stock={stock}");
 
             var equipo = new Equipo
             {
@@ -144,8 +111,6 @@ namespace TechRent.Controllers
                 MarcaId = marOk ? marcaId : 0,
                 FechaCreacion = DateTime.UtcNow
             };
-
-            Console.WriteLine($"  equipo.CategoriaId={equipo.CategoriaId}, equipo.MarcaId={equipo.MarcaId}");
 
             // Manually validate the fields we care about
             ModelState.Clear();
@@ -176,9 +141,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Edit(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var equipo = await _context.Equipos.FindAsync(id);
             if (equipo == null) return NotFound();
@@ -191,9 +153,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Edit(int id, Equipo equipo)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id != equipo.Id) return NotFound();
 
             if (equipo.CategoriaId == 0 && int.TryParse(Request.Form["CategoriaId"], out var catId))
@@ -243,9 +202,6 @@ namespace TechRent.Controllers
 
         public async Task<IActionResult> Delete(int? id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             if (id == null) return NotFound();
             var equipo = await _context.Equipos
                 .Include(e => e.Categoria)
@@ -259,9 +215,6 @@ namespace TechRent.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
-
             var equipo = await _context.Equipos.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);
             if (equipo != null)
             {

@@ -1,0 +1,30 @@
+@{
+    ViewData["Title"] = "Verificacion de autenticador de dos factores";
+    var error = ViewData["Error"] as string;
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<hr />
+<p>Tu cuenta esta protegida con una aplicacion de autenticacion de dos factores. Ingresa el codigo de autenticacion para continuar.</p>
+
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="LoginWith2fa" asp-controller="Auth" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+            <div class="form-floating mb-3">
+                <input name="authenticatorCode" class="form-control" autocomplete="off" placeholder="Ingrese el codigo" required />
+                <label class="control-label form-label">Codigo de autenticacion</label>
+            </div>
+            <button type="submit" class="w-100 btn btn-lg btn-primary">Iniciar sesion</button>
+        </form>
+        @if (!string.IsNullOrEmpty(error))
+        {
+            <div class="alert alert-danger mt-3">@error</div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

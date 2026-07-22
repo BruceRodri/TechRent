@@ -1,9 +1,11 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 
 namespace TechRent.Controllers
 {
+    [Authorize]
     public class ReportesController : Controller
     {
         private readonly AppDbContext _context;
@@ -13,17 +15,8 @@ namespace TechRent.Controllers
             _context = context;
         }
 
-        private IActionResult? VerificarSesion()
-        {
-            if (string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Login", "Auth");
-            return null;
-        }
-
         public async Task<IActionResult> Index()
         {
-            var sesion = VerificarSesion();
-            if (sesion != null) return sesion;
 
             // Total de equipos
             ViewBag.TotalEquipos = await _context.Equipos.CountAsync();

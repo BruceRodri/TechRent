@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechRent.Data;
@@ -11,9 +12,11 @@ using TechRent.Data;
 namespace TechRent.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260721210224_AddIdentityTables")]
+    partial class AddIdentityTables
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -218,37 +221,6 @@ namespace TechRent.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("TechRent.Models.CarritoItem", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Dias")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EquipoId")
-                        .HasColumnType("integer");
-
-                    b.Property<DateTime>("FechaAgregado")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("UsuarioEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EquipoId");
-
-                    b.ToTable("CarritoItems");
-                });
-
             modelBuilder.Entity("TechRent.Models.Categoria", b =>
                 {
                     b.Property<int>("Id")
@@ -328,47 +300,6 @@ namespace TechRent.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Clientes");
-                });
-
-            modelBuilder.Entity("TechRent.Models.DetalleOrdenAlquiler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("Cantidad")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Dias")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("EquipoId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("NombreEquipo")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("OrdenAlquilerId")
-                        .HasColumnType("integer");
-
-                    b.Property<decimal>("PrecioPorDia")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<decimal>("Subtotal")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EquipoId");
-
-                    b.HasIndex("OrdenAlquilerId");
-
-                    b.ToTable("DetallesOrdenAlquiler");
                 });
 
             modelBuilder.Entity("TechRent.Models.DetalleReserva", b =>
@@ -542,37 +473,6 @@ namespace TechRent.Migrations
                     b.ToTable("Marcas");
                 });
 
-            modelBuilder.Entity("TechRent.Models.OrdenAlquiler", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime?>("FechaPago")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<decimal>("Total")
-                        .HasPrecision(18, 2)
-                        .HasColumnType("numeric(18,2)");
-
-                    b.Property<string>("UsuarioEmail")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("OrdenesAlquiler");
-                });
-
             modelBuilder.Entity("TechRent.Models.Pago", b =>
                 {
                     b.Property<int>("Id")
@@ -668,59 +568,6 @@ namespace TechRent.Migrations
                     b.ToTable("Reservas");
                 });
 
-            modelBuilder.Entity("TechRent.Models.TransaccionPago", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClientTransactionId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Estado")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("FechaConfirmacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("FechaCreacion")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("MontoEnCentavos")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("OrdenAlquilerId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("PayPalApprovalUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PayPalCaptureId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PayPalOrderId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PayphonePaymentUrl")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Proveedor")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RespuestaGateway")
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("OrdenAlquilerId");
-
-                    b.ToTable("TransaccionesPago");
-                });
-
             modelBuilder.Entity("TechRent.Models.Usuario", b =>
                 {
                     b.Property<int>("Id")
@@ -810,36 +657,6 @@ namespace TechRent.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("TechRent.Models.CarritoItem", b =>
-                {
-                    b.HasOne("TechRent.Models.Equipo", "Equipo")
-                        .WithMany()
-                        .HasForeignKey("EquipoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Equipo");
-                });
-
-            modelBuilder.Entity("TechRent.Models.DetalleOrdenAlquiler", b =>
-                {
-                    b.HasOne("TechRent.Models.Equipo", "Equipo")
-                        .WithMany()
-                        .HasForeignKey("EquipoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("TechRent.Models.OrdenAlquiler", "OrdenAlquiler")
-                        .WithMany("Detalles")
-                        .HasForeignKey("OrdenAlquilerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Equipo");
-
-                    b.Navigation("OrdenAlquiler");
-                });
-
             modelBuilder.Entity("TechRent.Models.DetalleReserva", b =>
                 {
                     b.HasOne("TechRent.Models.Equipo", "Equipo")
@@ -908,17 +725,6 @@ namespace TechRent.Migrations
                     b.Navigation("EstadoReserva");
                 });
 
-            modelBuilder.Entity("TechRent.Models.TransaccionPago", b =>
-                {
-                    b.HasOne("TechRent.Models.OrdenAlquiler", "OrdenAlquiler")
-                        .WithMany("Transacciones")
-                        .HasForeignKey("OrdenAlquilerId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("OrdenAlquiler");
-                });
-
             modelBuilder.Entity("TechRent.Models.Categoria", b =>
                 {
                     b.Navigation("Equipos");
@@ -942,13 +748,6 @@ namespace TechRent.Migrations
             modelBuilder.Entity("TechRent.Models.Marca", b =>
                 {
                     b.Navigation("Equipos");
-                });
-
-            modelBuilder.Entity("TechRent.Models.OrdenAlquiler", b =>
-                {
-                    b.Navigation("Detalles");
-
-                    b.Navigation("Transacciones");
                 });
 
             modelBuilder.Entity("TechRent.Models.Reserva", b =>

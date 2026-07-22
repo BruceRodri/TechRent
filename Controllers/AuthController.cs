@@ -1,48 +1,97 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using TechRent.Data;
-using TechRent.Models;
 
 namespace TechRent.Controllers
 {
     public class AuthController : Controller
     {
-        private readonly AppDbContext _context;
+        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
 
-        public AuthController(AppDbContext context)
+        public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
         {
-            _context = context;
-        }
-
-        public IActionResult Login()
-        {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("UsuarioNombre")))
-                return RedirectToAction("Index", "Home");
-            return View();
+            _signInManager = signInManager;
+            _userManager = userManager;
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Login(string email, string password)
+        public IActionResult ExternalLogin(string provider, string? returnUrl = null)
         {
-            var usuario = await _context.Usuarios
-                .FirstOrDefaultAsync(u => u.Email == email && u.Password == password && u.Activo);
+            var redirectUrl = Url.Action("ExternalLoginCallback", "Auth", new { returnUrl });
+            var properties = _signInManager.ConfigureExternalAuthenticationProperties(provider, redirectUrl, _userManager.GetUserId(User));
+            return Challenge(properties, provider);
+        }
 
-            if (usuario != null)
+        public async Task<IActionResult> ExternalLoginCallback(string? returnUrl = null, string? remoteError = null)
+        {
+            if (remoteError != null)
             {
-                HttpContext.Session.SetString("UsuarioNombre", usuario.NombreCompleto);
-                HttpContext.Session.SetString("UsuarioEmail", usuario.Email);
+                TempData["Error"] = $"Error de Google: {remoteError}";
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            var info = await _signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+            {
+                TempData["Error"] = "Error al obtener informacion del proveedor externo";
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
+
+            if (result.Succeeded)
+            {
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                    return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
             }
 
-            ViewBag.Error = "Email o contraseña incorrectos";
-            return View();
+            var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
+
+            if (string.IsNullOrEmpty(email))
+            {
+                TempData["Error"] = "No se pudo obtener el email de la cuenta de Google";
+                return RedirectToPage("/Account/Login", new { area = "Identity" });
+            }
+
+            var user = await _userManager.FindByEmailAsync(email);
+
+            if (user == null)
+            {
+                user = new IdentityUser
+                {
+                    UserName = email,
+                    Email = email,
+                    EmailConfirmed = true
+                };
+
+                var createResult = await _userManager.CreateAsync(user);
+                if (!createResult.Succeeded)
+                {
+                    TempData["Error"] = "Error al crear la cuenta: " + string.Join(", ", createResult.Errors.Select(e => e.Description));
+                    return RedirectToPage("/Account/Login", new { area = "Identity" });
+                }
+            }
+
+            await _userManager.AddLoginAsync(user, info);
+            await _signInManager.SignInAsync(user, isPersistent: true);
+
+            if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+            return RedirectToAction("Index", "Home");
         }
 
-        public IActionResult Logout()
+        public async Task<IActionResult> Logout()
         {
-            HttpContext.Session.Clear();
-            return RedirectToAction("Login");
+            await _signInManager.SignOutAsync();
+            return RedirectToPage("/Account/Login", new { area = "Identity" });
+        }
+
+        public IActionResult AccessDenied()
+        {
+            return View();
         }
     }
 }
