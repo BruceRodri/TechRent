@@ -1,0 +1,80 @@
+@{
+    ViewData["Title"] = "Asistente IA";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h4 class="mb-0"><i class="bi bi-robot"></i> TechRent AI - Asistente de Recomendaciones</h4>
+                    <small>Describe lo que necesitas y te recomendamos los mejores equipos</small>
+                </div>
+                <div class="card-body">
+                    <div id="chat" class="mb-3" style="height: 400px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 15px;">
+                        <div class="text-muted text-center mt-5">
+                            <i class="bi bi-chat-dots" style="font-size: 3rem;"></i>
+                            <p class="mt-2">Ejemplo: "Necesito equipo para grabar un video profesional"</p>
+                        </div>
+                    </div>
+                    <div class="input-group">
+                        <input type="text" id="mensaje" class="form-control" placeholder="Escribe tu consulta aqui..." 
+                               onkeypress="if(event.key==='Enter') enviar()" />
+                        <button class="btn btn-primary" onclick="enviar()" id="btnEnviar">
+                            <i class="bi bi-send"></i> Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function enviar() {
+            var input = document.getElementById('mensaje');
+            var mensaje = input.value.trim();
+            if (!mensaje) return;
+
+            var chat = document.getElementById('chat');
+
+            // Quitar mensaje de bienvenida
+            var bienvenida = chat.querySelector('.text-muted');
+            if (bienvenida) bienvenida.remove();
+
+            // Agregar mensaje del usuario
+            chat.innerHTML += '<div class="text-end mb-2"><span class="badge bg-primary p-2">' + mensaje + '</span></div>';
+            input.value = '';
+
+            // Indicador de carga
+            chat.innerHTML += '<div id="cargando" class="text-start mb-2"><span class="badge bg-secondary p-2"><i class="bi bi-hourglass-split"></i> Pensando...</span></div>';
+            chat.scrollTop = chat.scrollHeight;
+
+            document.getElementById('btnEnviar').disabled = true;
+
+            fetch('/Ia/Generar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'mensaje=' + encodeURIComponent(mensaje)
+            })
+            .then(function(response) { return response.json(); })
+            .then(function(data) {
+                var cargando = document.getElementById('cargando');
+                if (cargando) cargando.remove();
+
+                chat.innerHTML += '<div class="text-start mb-2"><span class="badge bg-success p-2" style="white-space: pre-wrap;">' + data.respuesta + '</span></div>';
+                chat.scrollTop = chat.scrollHeight;
+                document.getElementById('btnEnviar').disabled = false;
+            })
+            .catch(function() {
+                var cargando = document.getElementById('cargando');
+                if (cargando) cargando.remove();
+
+                chat.innerHTML += '<div class="text-start mb-2"><span class="badge bg-danger p-2">Error al conectar con Ollama</span></div>';
+                chat.scrollTop = chat.scrollHeight;
+                document.getElementById('btnEnviar').disabled = false;
+            });
+        }
+    </script>
+}

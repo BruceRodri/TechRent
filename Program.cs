@@ -62,6 +62,7 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddHttpClient<PayPhoneApiLinkService>();
 builder.Services.AddTransient<IEmailSender, GmailEmailSender>();
+builder.Services.AddHttpClient<OllamaService>();
 
 var app = builder.Build();
 
