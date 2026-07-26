@@ -5,7 +5,7 @@ using TechRent.Data;
 
 namespace TechRent.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class ReportesController : Controller
     {
         private readonly AppDbContext _context;

@@ -73,6 +73,7 @@ namespace TechRent.Controllers
             return View(equipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         public IActionResult Create()
         {
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nombre");
@@ -82,6 +83,7 @@ namespace TechRent.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Create(bool? _ = null)
         {
             var nombre = Request.Form["Nombre"].ToString();
@@ -139,6 +141,7 @@ namespace TechRent.Controllers
             return View(equipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -151,6 +154,7 @@ namespace TechRent.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Edit(int id, Equipo equipo)
         {
             if (id != equipo.Id) return NotFound();
@@ -200,6 +204,7 @@ namespace TechRent.Controllers
             return View(equipo);
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -213,6 +218,7 @@ namespace TechRent.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var equipo = await _context.Equipos.IgnoreQueryFilters().FirstOrDefaultAsync(e => e.Id == id);

@@ -6,7 +6,7 @@ using TechRent.Models;
 
 namespace TechRent.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Administrador")]
     public class CategoriasController : Controller
     {
         private readonly AppDbContext _context;

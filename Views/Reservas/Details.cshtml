@@ -12,9 +12,12 @@
                 <p class="text-slate-500 text-sm mt-1">Información completa de la reserva</p>
             </div>
             <div class="flex gap-2">
-                <a asp-action="Edit" asp-route-id="@Model.Id" class="px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
-                    Editar
-                </a>
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                        Editar
+                    </a>
+                }
                 <a asp-action="Index" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700 transition">
                     Volver
                 </a>

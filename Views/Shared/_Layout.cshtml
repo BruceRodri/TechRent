@@ -43,16 +43,22 @@
                     <div class="hidden md:flex items-center gap-1">
                         <a asp-controller="Home" asp-action="Index"
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Home</a>
-                        <a asp-controller="Categorias" asp-action="Index"
-                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Categorias</a>
-                        <a asp-controller="Marcas" asp-action="Index"
-                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Marcas</a>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <a asp-controller="Categorias" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Categorias</a>
+                            <a asp-controller="Marcas" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Marcas</a>
+                        }
                         <a asp-controller="Equipos" asp-action="Index"
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Equipos</a>
-                        <a asp-controller="Clientes" asp-action="Index"
-                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Clientes</a>
                         <a asp-controller="Reservas" asp-action="Index"
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Reservas</a>
+                        @if (User.IsInRole("Administrador"))
+                        {
+                            <a asp-controller="Clientes" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Clientes</a>
+                        }
                         <a asp-controller="Reportes" asp-action="Index"
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Reportes</a>
                         <a asp-controller="Ia" asp-action="Index"
@@ -117,11 +123,17 @@
 
             <div id="mobileMenu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 pb-3">
                 <a asp-controller="Home" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Home</a>
-                <a asp-controller="Categorias" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Categorias</a>
-                <a asp-controller="Marcas" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Marcas</a>
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-controller="Categorias" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Categorias</a>
+                    <a asp-controller="Marcas" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Marcas</a>
+                }
                 <a asp-controller="Equipos" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Equipos</a>
-                <a asp-controller="Clientes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Clientes</a>
                 <a asp-controller="Reservas" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Reservas</a>
+                @if (User.IsInRole("Administrador"))
+                {
+                    <a asp-controller="Clientes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Clientes</a>
+                }
                 <a asp-controller="Reportes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Reportes</a>
                 <a asp-controller="Ia" asp-action="Index" class="block py-2 text-sm font-medium text-primary-600">Asistente IA</a>
             </div>

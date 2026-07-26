@@ -18,7 +18,7 @@ namespace TechRent.Services
 
         public async Task SeedAsync()
         {
-            string[] roles = { "Administrador", "Supervisor", "Operador", "Consulta" };
+            string[] roles = { "Administrador", "Cliente" };
 
             foreach (var role in roles)
             {

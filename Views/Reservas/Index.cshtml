@@ -90,9 +90,15 @@
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1">
-                                    <a asp-action="Edit" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-primary-500 hover:bg-primary-50 transition"><i class="bi bi-pencil text-sm"></i></a>
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a asp-action="Edit" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-primary-500 hover:bg-primary-50 transition"><i class="bi bi-pencil text-sm"></i></a>
+                                    }
                                     <a asp-action="Details" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition"><i class="bi bi-eye text-sm"></i></a>
-                                    <a asp-action="Delete" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 transition"><i class="bi bi-trash text-sm"></i></a>
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 transition"><i class="bi bi-trash text-sm"></i></a>
+                                    }
                                 </div>
                             </td>
                         </tr>

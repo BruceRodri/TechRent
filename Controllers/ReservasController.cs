@@ -213,6 +213,7 @@ namespace TechRent.Controllers
             return Ok(equipos);
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
@@ -228,6 +229,7 @@ namespace TechRent.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Edit(int id, Reserva reserva)
         {
             if (id != reserva.Id) return NotFound();
@@ -314,6 +316,7 @@ namespace TechRent.Controllers
             return View(reserva);
         }
 
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null) return NotFound();
@@ -327,6 +330,7 @@ namespace TechRent.Controllers
 
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
         public async Task<IActionResult> DeleteConfirmed(int id)
         {
             var item = await _context.Reservas.IgnoreQueryFilters().FirstOrDefaultAsync(r => r.Id == id);
