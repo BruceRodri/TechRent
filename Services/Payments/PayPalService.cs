@@ -22,15 +22,86 @@ namespace TechRent.Services.Payments
         public string RawResponse { get; set; } = string.Empty;
     }
 
-    public class PayPalService
+    public class PayPalService : IPaymentGateway
     {
         private readonly HttpClient _httpClient;
         private readonly PayPalSettings _settings;
+        public string ProviderName => "PayPal";
 
         public PayPalService(HttpClient httpClient, IOptions<PayPalSettings> options)
         {
             _httpClient = httpClient;
             _settings = options.Value;
+        }
+
+        public async Task<PaymentStartResult> CreatePaymentAsync(PaymentRequest request)
+        {
+            try
+            {
+                var result = await CreateOrderAsync(request.Monto, request.Referencia);
+                return new PaymentStartResult
+                {
+                    Success = true,
+                    ExternalTransactionId = result.OrderId,
+                    ApprovalUrl = result.ApprovalUrl,
+                    RawResponse = result.RawResponse
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentStartResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
+        public async Task<PaymentVerificationResult> VerifyPaymentAsync(string transactionId)
+        {
+            try
+            {
+                var result = await CaptureOrderAsync(transactionId);
+                return new PaymentVerificationResult
+                {
+                    Success = result.Status == "COMPLETED",
+                    Status = MapStatus(result.Status),
+                    CaptureId = result.CaptureId,
+                    RawResponse = result.RawResponse
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentVerificationResult
+                {
+                    Success = false,
+                    Status = "Fallido",
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
+        public Task<PaymentCancellationResult> CancelPaymentAsync(string transactionId)
+        {
+            return Task.FromResult(new PaymentCancellationResult
+            {
+                Success = true,
+                RawResponse = $"PayPal order {transactionId} cancelada. PayPal no requiere cancelación explícita."
+            });
+        }
+
+        private static string MapStatus(string paypalStatus)
+        {
+            return paypalStatus switch
+            {
+                "COMPLETED" => "Pagado",
+                "PAYER_ACTION_REQUIRED" => "Pendiente",
+                "CREATED" => "Pendiente",
+                "SAVED" => "Pendiente",
+                "APPROVED" => "Pendiente",
+                "VOIDED" => "Cancelado",
+                _ => paypalStatus
+            };
         }
 
         public async Task<PayPalOrderResult> CreateOrderAsync(decimal total, string reference)

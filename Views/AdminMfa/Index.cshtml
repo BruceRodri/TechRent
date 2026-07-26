@@ -1,0 +1,148 @@
+@model IEnumerable<Microsoft.AspNetCore.Identity.IdentityUser>
+
+@{
+    ViewData["Title"] = "Gestion MFA de Usuarios";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-shield-lock text-primary-500"></i> Gestion MFA
+        </h1>
+        <p class="text-sm text-slate-400">Activa, desactiva o restablece la autenticacion de dos factores de los usuarios</p>
+    </div>
+
+    @if (TempData["Exito"] != null)
+    {
+        <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl px-4 py-3 mb-4 text-sm flex items-center gap-2">
+            <i class="bi bi-check-circle"></i> @TempData["Exito"]
+        </div>
+    }
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <input type="text" name="search" value="@ViewBag.Search" placeholder="Buscar por email..."
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 w-64" />
+        <select name="mfaEnabled" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400">
+            <option value="">Todos</option>
+            <option value="true" selected="@(ViewBag.MfaEnabled?.ToString() == "True")">MFA Activo</option>
+            <option value="false" selected="@(ViewBag.MfaEnabled?.ToString() == "False")">MFA Inactivo</option>
+        </select>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-envelope mr-1"></i> Email</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-shield mr-1"></i> Estado MFA</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-envelope-check mr-1"></i> Email Confirmado</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay usuarios registrados.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var user in Model)
+                    {
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-4 py-3 font-medium text-slate-700">@user.Email</td>
+                            <td class="px-4 py-3">
+                                @if (user.TwoFactorEnabled)
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">
+                                        <i class="bi bi-shield-check"></i> Activo
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-xs font-medium">
+                                        <i class="bi bi-shield-x"></i> Inactivo
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-4 py-3">
+                                @if (user.EmailConfirmed)
+                                {
+                                    <span class="inline-flex items-center gap-1 text-emerald-600 text-xs"><i class="bi bi-check-circle-fill"></i> Si</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 text-slate-400 text-xs"><i class="bi bi-x-circle"></i> No</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3">
+                                <div class="flex gap-1">
+                                    @if (!user.TwoFactorEnabled)
+                                    {
+                                        <form asp-action="ActivarMfa" method="post" class="inline">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-medium hover:bg-emerald-100 transition" title="Activar MFA">
+                                                <i class="bi bi-shield-check"></i> Activar
+                                            </button>
+                                        </form>
+                                    }
+                                    else
+                                    {
+                                        <form asp-action="DesactivarMfa" method="post" class="inline">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-amber-50 text-amber-600 text-xs font-medium hover:bg-amber-100 transition" title="Desactivar MFA">
+                                                <i class="bi bi-shield-x"></i> Desactivar
+                                            </button>
+                                        </form>
+                                        <form asp-action="ResetClaveAuthenticator" method="post" class="inline"
+                                              onsubmit="return confirm('Esto desactivara 2FA y borrara la clave del autenticador. El usuario tendra que configurarlo de nuevo. Continuar?')">
+                                            <input type="hidden" name="userId" value="@user.Id" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-medium hover:bg-rose-100 transition" title="Restablecer autenticador">
+                                                <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mt-4">
+        <p class="text-sm text-slate-400">Total: @ViewBag.TotalRegistros usuarios</p>
+        @if ((int)ViewBag.TotalPages > 1)
+        {
+            <div class="flex items-center gap-2">
+                @if ((int)ViewBag.PageNumber > 1)
+                {
+                    <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber - 1)" asp-route-search="@ViewBag.Search" asp-route-mfaEnabled="@ViewBag.MfaEnabled"
+                       class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                }
+                <span class="px-3 py-2 text-sm text-slate-500">
+                    Pagina <span class="font-semibold text-slate-700">@ViewBag.PageNumber</span> de @ViewBag.TotalPages
+                </span>
+                @if ((int)ViewBag.PageNumber < (int)ViewBag.TotalPages)
+                {
+                    <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber + 1)" asp-route-search="@ViewBag.Search" asp-route-mfaEnabled="@ViewBag.MfaEnabled"
+                       class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>

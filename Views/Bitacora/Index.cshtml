@@ -1,0 +1,119 @@
+@model IEnumerable<TechRent.Models.AuditLog>
+
+@{
+    ViewData["Title"] = "Bitacora de Accesos";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-journal-text text-primary-500"></i> Bitacora de Accesos
+        </h1>
+        <p class="text-sm text-slate-400">Registro de todos los accesos y eventos del sistema</p>
+    </div>
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <input type="text" name="email" value="@ViewBag.Email" placeholder="Buscar por email..."
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 w-64" />
+        <select name="accion" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400">
+            <option value="">Todas las acciones</option>
+            <option value="Inicio de sesion" selected="@(ViewBag.Accion == "Inicio de sesion")">Inicio de sesion</option>
+            <option value="Cierre de sesion" selected="@(ViewBag.Accion == "Cierre de sesion")">Cierre de sesion</option>
+            <option value="Acceso denegado" selected="@(ViewBag.Accion == "Acceso denegado")">Acceso denegado</option>
+            <option value="Verificacion 2FA" selected="@(ViewBag.Accion == "Verificacion 2FA")">Verificacion 2FA</option>
+            <option value="Cuenta bloqueada" selected="@(ViewBag.Accion == "Cuenta bloqueada")">Cuenta bloqueada</option>
+        </select>
+        <input type="date" name="fechaDesde" value="@ViewBag.FechaDesde"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <input type="date" name="fechaHasta" value="@ViewBag.FechaHasta"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-calendar mr-1"></i> Fecha</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-person mr-1"></i> Email</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-lightning mr-1"></i> Accion</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-arrow-right mr-1"></i> Metodo</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-link mr-1"></i> Ruta</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-globe mr-1"></i> IP</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-chat-left-text mr-1"></i> Detalles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay registros de auditoria.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-4 py-3 text-slate-600 whitespace-nowrap text-xs">@item.Fecha.ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td class="px-4 py-3">
+                                <span class="font-medium text-slate-700 text-xs">@(item.Email ?? "—")</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                @if (item.Accion.Contains("denegado") || item.Accion.Contains("bloqueada") || item.Accion.Contains("fallido"))
+                                {
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-xs font-medium">@item.Accion</span>
+                                }
+                                else if (item.Accion.Contains("exitoso") || item.Accion.Contains("2FA") || item.Accion.Contains("Cierre"))
+                                {
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">@item.Accion</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-xs font-medium">@item.Accion</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-500">@(item.Metodo ?? "—")</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 max-w-[200px] truncate" title="@item.Ruta">@(item.Ruta ?? "—")</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">@(item.IpAddress ?? "—")</td>
+                            <td class="px-4 py-3 text-xs text-slate-400 max-w-[200px] truncate" title="@item.Detalles">@(item.Detalles ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="flex justify-between items-center mt-4">
+        <p class="text-sm text-slate-400">Total: @ViewBag.TotalRegistros registros</p>
+        @if ((int)ViewBag.TotalPages > 1)
+        {
+            <div class="flex items-center gap-2">
+                @if ((int)ViewBag.PageNumber > 1)
+                {
+                    <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber - 1)" asp-route-email="@ViewBag.Email" asp-route-accion="@ViewBag.Accion" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                       class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                        <i class="bi bi-chevron-left"></i>
+                    </a>
+                }
+                <span class="px-3 py-2 text-sm text-slate-500">
+                    Pagina <span class="font-semibold text-slate-700">@ViewBag.PageNumber</span> de @ViewBag.TotalPages
+                </span>
+                @if ((int)ViewBag.PageNumber < (int)ViewBag.TotalPages)
+                {
+                    <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber + 1)" asp-route-email="@ViewBag.Email" asp-route-accion="@ViewBag.Accion" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                       class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                        <i class="bi bi-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>

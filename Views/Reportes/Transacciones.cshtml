@@ -1,0 +1,216 @@
+@model IEnumerable<TechRent.Models.TransaccionPago>
+
+@{
+    ViewData["Title"] = "Reporte de Transacciones";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-credit-card text-primary-500"></i> Reporte de Transacciones
+        </h1>
+        <p class="text-sm text-slate-400">Historial completo de transacciones de pago por pasarela</p>
+    </div>
+
+    <!-- Resumen por pasarela -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        @foreach (var p in (IEnumerable<dynamic>)ViewBag.ResumenPorPasarela)
+        {
+            <div class="bg-white rounded-xl p-4 border border-slate-100">
+                <div class="flex items-center gap-2 mb-3">
+                    @if (p.Proveedor == "PayPal" || p.Proveedor == "PayPalButton")
+                    {
+                        <i class="bi bi-paypal text-blue-500 text-xl"></i>
+                    }
+                    else
+                    {
+                        <i class="bi bi-phone text-emerald-500 text-xl"></i>
+                    }
+                    <h3 class="font-bold text-slate-800">@p.Proveedor</h3>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-slate-800">@p.TotalTransacciones</div>
+                        <div class="text-slate-500">Total</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-emerald-600">$@p.MontoAprobado.ToString("N2")</div>
+                        <div class="text-slate-500">Aprobado</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-amber-600">@p.Pendientes</div>
+                        <div class="text-slate-500">Pendientes</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-rose-600">$@p.MontoCancelado.ToString("N2")</div>
+                        <div class="text-slate-500">Cancelado</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-red-700">$@p.MontoFallido.ToString("N2")</div>
+                        <div class="text-slate-500">Fallido</div>
+                    </div>
+                    <div class="bg-slate-50 rounded-lg p-2 text-center">
+                        <div class="font-bold text-purple-600">$@p.MontoReembolsado.ToString("N2")</div>
+                        <div class="text-slate-500">Reembolsado</div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Resumen por estado -->
+    <div class="bg-white rounded-2xl border border-slate-100 p-4 mb-6">
+        <h3 class="font-bold text-slate-800 mb-3"><i class="bi bi-pie-chart text-primary-500"></i> Resumen por Estado</h3>
+        <div class="flex flex-wrap gap-3">
+            @foreach (var e in (IEnumerable<dynamic>)ViewBag.ResumenPorEstado)
+            {
+                var color = e.Estado switch
+                {
+                    "Pagado" => "bg-emerald-50 text-emerald-700 border-emerald-200",
+                    "Pendiente" => "bg-amber-50 text-amber-700 border-amber-200",
+                    "Cancelado" => "bg-rose-50 text-rose-700 border-rose-200",
+                    "Fallido" => "bg-red-50 text-red-700 border-red-200",
+                    "Expirado" => "bg-slate-50 text-slate-700 border-slate-200",
+                    "Reembolsado" => "bg-purple-50 text-purple-700 border-purple-200",
+                    _ => "bg-slate-50 text-slate-700 border-slate-200"
+                };
+                <div class="px-3 py-2 rounded-lg border @color text-sm">
+                    <span class="font-semibold">@e.Estado</span>: @e.Cantidad ($@e.MontoTotal.ToString("N2"))
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <select name="proveedor" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100">
+            <option value="">Todas las pasarelas</option>
+            <option value="PayPal" selected="@(ViewBag.Proveedor == "PayPal")">PayPal</option>
+            <option value="PayPalButton" selected="@(ViewBag.Proveedor == "PayPalButton")">PayPal Button</option>
+            <option value="PayPhone" selected="@(ViewBag.Proveedor == "PayPhone")">PayPhone</option>
+        </select>
+        <select name="estado" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100">
+            <option value="">Todos los estados</option>
+            <option value="Pagado" selected="@(ViewBag.Estado == "Pagado")">Pagado</option>
+            <option value="Pendiente" selected="@(ViewBag.Estado == "Pendiente")">Pendiente</option>
+            <option value="Cancelado" selected="@(ViewBag.Estado == "Cancelado")">Cancelado</option>
+            <option value="Fallido" selected="@(ViewBag.Estado == "Fallido")">Fallido</option>
+            <option value="Expirado" selected="@(ViewBag.Estado == "Expirado")">Expirado</option>
+            <option value="Reembolsado" selected="@(ViewBag.Estado == "Reembolsado")">Reembolsado</option>
+        </select>
+        <input type="date" name="fechaDesde" value="@ViewBag.FechaDesde"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
+        <input type="date" name="fechaHasta" value="@ViewBag.FechaHasta"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition"><i class="bi bi-search"></i> Filtrar</button>
+        <a asp-action="Transacciones" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition"><i class="bi bi-x-circle"></i> Limpiar</a>
+    </form>
+
+    <!-- Tabla de transacciones -->
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Id</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Orden</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Pasarela</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Identificador Externo</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Monto</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Moneda</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Estado</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Fecha Creacion</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Fecha Confirmacion</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Intentos</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Mensaje</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="12" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay transacciones registradas.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        var estadoColor = item.Estado switch
+                        {
+                            "Pagado" => "bg-emerald-50 text-emerald-600",
+                            "Pendiente" => "bg-amber-50 text-amber-600",
+                            "Cancelado" => "bg-rose-50 text-rose-600",
+                            "Fallido" => "bg-red-50 text-red-700",
+                            "Expirado" => "bg-slate-100 text-slate-600",
+                            "Reembolsado" => "bg-purple-50 text-purple-600",
+                            _ => "bg-slate-50 text-slate-600"
+                        };
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-4 py-3 text-slate-500">@item.Id</td>
+                            <td class="px-4 py-3 text-slate-700 font-medium">#@item.OrdenAlquilerId</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-50 text-slate-600 text-xs font-medium">
+                                    @if (item.Proveedor.Contains("PayPal"))
+                                    {
+                                        <i class="bi bi-paypal"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="bi bi-phone"></i>
+                                    }
+                                    @item.Proveedor
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-400 font-mono max-w-[120px] truncate" title="@(item.PayPalOrderId ?? item.ClientTransactionId)">
+                                @(item.PayPalOrderId ?? item.ClientTransactionId ?? "—")
+                            </td>
+                            <td class="px-4 py-3 font-semibold text-slate-700">$@((item.MontoEnCentavos / 100m).ToString("N2"))</td>
+                            <td class="px-4 py-3 text-slate-500 text-xs">@item.Moneda</td>
+                            <td class="px-4 py-3">
+                                <span class="inline-flex px-2 py-0.5 rounded-md @estadoColor text-xs font-medium">@item.Estado</span>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">@item.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">@(item.FechaConfirmacion?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "—")</td>
+                            <td class="px-4 py-3 text-xs text-slate-500 text-center">@item.IntentosVerificacion</td>
+                            <td class="px-4 py-3 text-xs text-slate-400 max-w-[150px] truncate" title="@item.MensajeRespuesta">
+                                @(item.MensajeRespuesta ?? "—")
+                            </td>
+                            <td class="px-4 py-3">
+                                <a asp-controller="Pago" asp-action="Details" asp-route-id="@item.Id"
+                                   class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition" title="Ver detalle">
+                                    <i class="bi bi-eye text-sm"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="flex justify-center items-center gap-2 mt-6">
+            @if ((int)ViewBag.PageNumber > 1)
+            {
+                <a asp-action="Transacciones" asp-route-pageNumber="@((int)ViewBag.PageNumber - 1)" asp-route-proveedor="@ViewBag.Proveedor" asp-route-estado="@ViewBag.Estado" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            }
+            <span class="px-3 py-2 text-sm text-slate-500">
+                Pagina <span class="font-semibold text-slate-700">@ViewBag.PageNumber</span> de @ViewBag.TotalPages
+            </span>
+            @if ((int)ViewBag.PageNumber < (int)ViewBag.TotalPages)
+            {
+                <a asp-action="Transacciones" asp-route-pageNumber="@((int)ViewBag.PageNumber + 1)" asp-route-proveedor="@ViewBag.Proveedor" asp-route-estado="@ViewBag.Estado" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>

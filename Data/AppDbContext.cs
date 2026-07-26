@@ -24,6 +24,9 @@ namespace TechRent.Data
         public DbSet<OrdenAlquiler> OrdenesAlquiler { get; set; }
         public DbSet<DetalleOrdenAlquiler> DetallesOrdenAlquiler { get; set; }
         public DbSet<TransaccionPago> TransaccionesPago { get; set; }
+        public DbSet<MovimientoInventario> MovimientosInventario { get; set; }
+        public DbSet<EmailLog> EmailLogs { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -112,6 +115,12 @@ namespace TechRent.Data
             modelBuilder.Entity<DetalleOrdenAlquiler>()
                 .Property(d => d.Subtotal)
                 .HasPrecision(18, 2);
+
+            modelBuilder.Entity<MovimientoInventario>()
+                .HasOne(m => m.Equipo)
+                .WithMany(e => e.MovimientosInventario)
+                .HasForeignKey(m => m.EquipoId)
+                .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

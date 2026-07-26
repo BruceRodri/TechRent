@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using TechRent.Services;
 
 namespace TechRent.Areas.Identity.Pages.Account.Manage
 {
@@ -14,12 +15,14 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<ChangePasswordModel> _logger;
+        private readonly IEmailNotificationService _emailNotification;
 
-        public ChangePasswordModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<ChangePasswordModel> logger)
+        public ChangePasswordModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<ChangePasswordModel> logger, IEmailNotificationService emailNotification)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _emailNotification = emailNotification;
         }
 
         [BindProperty]
@@ -75,6 +78,7 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
 
             await _signInManager.RefreshSignInAsync(user);
             _logger.LogInformation("Usuario cambio su contrasena exitosamente.");
+            await _emailNotification.SendPasswordChangedNotificationAsync(user.Email!);
             StatusMessage = "Tu contrasena ha sido cambiada.";
             return RedirectToPage();
         }

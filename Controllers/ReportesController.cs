@@ -64,5 +64,84 @@ namespace TechRent.Controllers
 
             return View();
         }
+
+        public async Task<IActionResult> Transacciones(
+            string? proveedor = null,
+            string? estado = null,
+            DateTime? fechaDesde = null,
+            DateTime? fechaHasta = null,
+            int pageNumber = 1)
+        {
+            int pageSize = 20;
+
+            var query = _context.TransaccionesPago
+                .Include(t => t.OrdenAlquiler)
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrEmpty(proveedor))
+                query = query.Where(t => t.Proveedor == proveedor);
+
+            if (!string.IsNullOrEmpty(estado))
+                query = query.Where(t => t.Estado == estado);
+
+            if (fechaDesde.HasValue)
+                query = query.Where(t => t.FechaCreacion >= fechaDesde.Value);
+
+            if (fechaHasta.HasValue)
+                query = query.Where(t => t.FechaCreacion <= fechaHasta.Value.AddDays(1));
+
+            var totalRegistros = await query.CountAsync();
+
+            var transacciones = await query
+                .OrderByDescending(t => t.FechaCreacion)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            // Resumen por pasarela
+            var resumenPorPasarela = await _context.TransaccionesPago
+                .GroupBy(t => t.Proveedor)
+                .Select(g => new
+                {
+                    Proveedor = g.Key,
+                    TotalTransacciones = g.Count(),
+                    MontoTotal = g.Sum(t => t.MontoEnCentavos) / 100m,
+                    Aprobados = g.Count(t => t.Estado == "Pagado"),
+                    Pendientes = g.Count(t => t.Estado == "Pendiente"),
+                    Cancelados = g.Count(t => t.Estado == "Cancelado"),
+                    Fallidos = g.Count(t => t.Estado == "Fallido"),
+                    Expirados = g.Count(t => t.Estado == "Expirado"),
+                    Reembolsados = g.Count(t => t.Estado == "Reembolsado"),
+                    MontoAprobado = g.Where(t => t.Estado == "Pagado").Sum(t => t.MontoEnCentavos) / 100m,
+                    MontoCancelado = g.Where(t => t.Estado == "Cancelado").Sum(t => t.MontoEnCentavos) / 100m,
+                    MontoFallido = g.Where(t => t.Estado == "Fallido").Sum(t => t.MontoEnCentavos) / 100m,
+                    MontoReembolsado = g.Where(t => t.Estado == "Reembolsado").Sum(t => t.MontoEnCentavos) / 100m
+                })
+                .ToListAsync();
+
+            // Resumen por estado
+            var resumenPorEstado = await _context.TransaccionesPago
+                .GroupBy(t => t.Estado)
+                .Select(g => new
+                {
+                    Estado = g.Key,
+                    Cantidad = g.Count(),
+                    MontoTotal = g.Sum(t => t.MontoEnCentavos) / 100m
+                })
+                .ToListAsync();
+
+            ViewBag.TotalRegistros = totalRegistros;
+            ViewBag.PageNumber = pageNumber;
+            ViewBag.TotalPages = (int)Math.Ceiling((double)totalRegistros / pageSize);
+            ViewBag.Proveedor = proveedor;
+            ViewBag.Estado = estado;
+            ViewBag.FechaDesde = fechaDesde?.ToString("yyyy-MM-dd");
+            ViewBag.FechaHasta = fechaHasta?.ToString("yyyy-MM-dd");
+            ViewBag.ResumenPorPasarela = resumenPorPasarela;
+            ViewBag.ResumenPorEstado = resumenPorEstado;
+
+            return View(transacciones);
+        }
     }
 }

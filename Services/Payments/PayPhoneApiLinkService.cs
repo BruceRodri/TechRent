@@ -5,15 +5,62 @@ using TechRent.Settings;
 
 namespace TechRent.Services.Payments
 {
-    public class PayPhoneApiLinkService
+    public class PayPhoneApiLinkService : IPaymentGateway
     {
         private readonly HttpClient _httpClient;
         private readonly PayPhoneSettings _settings;
+        public string ProviderName => "PayPhone";
 
         public PayPhoneApiLinkService(HttpClient httpClient, IOptions<PayPhoneSettings> options)
         {
             _httpClient = httpClient;
             _settings = options.Value;
+        }
+
+        public async Task<PaymentStartResult> CreatePaymentAsync(PaymentRequest request)
+        {
+            try
+            {
+                var link = await CreatePaymentLinkAsync(
+                    request.Monto,
+                    request.ClientTransactionId ?? DateTime.Now.ToString("yyMMddHHmmssfff")[..15],
+                    request.Referencia);
+
+                return new PaymentStartResult
+                {
+                    Success = true,
+                    ExternalTransactionId = request.ClientTransactionId,
+                    ApprovalUrl = link,
+                    RawResponse = link
+                };
+            }
+            catch (Exception ex)
+            {
+                return new PaymentStartResult
+                {
+                    Success = false,
+                    ErrorMessage = ex.Message
+                };
+            }
+        }
+
+        public Task<PaymentVerificationResult> VerifyPaymentAsync(string transactionId)
+        {
+            return Task.FromResult(new PaymentVerificationResult
+            {
+                Success = false,
+                Status = "Pendiente",
+                ErrorMessage = "PayPhone no soporta verificación por ID directo. Use el flujo de redirección."
+            });
+        }
+
+        public Task<PaymentCancellationResult> CancelPaymentAsync(string transactionId)
+        {
+            return Task.FromResult(new PaymentCancellationResult
+            {
+                Success = true,
+                RawResponse = $"PayPhone transacción {transactionId} cancelada localmente."
+            });
         }
 
         public async Task<string> CreatePaymentLinkAsync(

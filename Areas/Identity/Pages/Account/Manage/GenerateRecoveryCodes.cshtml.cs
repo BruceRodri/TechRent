@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
+using TechRent.Services;
 
 namespace TechRent.Areas.Identity.Pages.Account.Manage
 {
@@ -13,12 +14,14 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly ILogger<GenerateRecoveryCodesModel> _logger;
+        private readonly IEmailNotificationService _emailNotification;
 
-        public GenerateRecoveryCodesModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<GenerateRecoveryCodesModel> logger)
+        public GenerateRecoveryCodesModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, ILogger<GenerateRecoveryCodesModel> logger, IEmailNotificationService emailNotification)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _logger = logger;
+            _emailNotification = emailNotification;
         }
 
         [TempData]
@@ -44,6 +47,7 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
             if (codes == null) return BadRequest("No se pudieron generar codigos de recuperacion.");
 
             _logger.LogInformation("Usuario genero nuevos codigos de recuperacion.");
+            await _emailNotification.SendMfaActivatedNotificationAsync(user.Email!);
 
             return RedirectToPage("./ShowRecoveryCodes", new { recoveryCodes = codes.ToArray() });
         }

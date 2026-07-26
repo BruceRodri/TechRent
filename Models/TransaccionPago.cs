@@ -12,8 +12,11 @@ namespace TechRent.Models
         public string? PayPalCaptureId { get; set; }
         public string? PayPalApprovalUrl { get; set; }
         public int MontoEnCentavos { get; set; }
+        public string Moneda { get; set; } = "USD";
         public string Estado { get; set; } = "Pendiente";
+        public string? MensajeRespuesta { get; set; }
         public string? RespuestaGateway { get; set; }
+        public int IntentosVerificacion { get; set; } = 0;
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime? FechaConfirmacion { get; set; }
     }

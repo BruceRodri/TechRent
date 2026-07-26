@@ -74,18 +74,27 @@
                                 <span class="text-xs text-slate-400 block">/dia</span>
                             </td>
                             <td class="px-4 py-3">
-                                @if (item.Stock > 5)
-                                {
-                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">@item.Stock disp.</span>
-                                }
-                                else if (item.Stock > 0)
-                                {
-                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-xs font-medium">@item.Stock disp.</span>
-                                }
-                                else
-                                {
-                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-xs font-medium">Agotado</span>
-                                }
+                                <div class="flex items-center gap-1">
+                                    @if (item.Stock > 5)
+                                    {
+                                        <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">@item.Stock disp.</span>
+                                    }
+                                    else if (item.Stock > 0)
+                                    {
+                                        <span class="inline-flex px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-xs font-medium">@item.Stock disp.</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="inline-flex px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-xs font-medium">Agotado</span>
+                                    }
+                                    @if (User.IsInRole("Administrador"))
+                                    {
+                                        <button type="button" class="p-1 rounded text-slate-400 hover:text-primary-500 hover:bg-primary-50 transition"
+                                                onclick="abrirAjusteStock(@item.Id, '@item.Nombre.Replace("'", "\\'")', @item.Stock)" title="Ajustar stock">
+                                            <i class="bi bi-sliders text-xs"></i>
+                                        </button>
+                                    }
+                                </div>
                             </td>
                             <td class="px-4 py-3">
                                 <div class="flex items-center gap-1">
@@ -115,6 +124,30 @@
     </div>
     @await Html.PartialAsync("_Pagination")
 </div>
+
+@if (User.IsInRole("Administrador"))
+{
+    <div id="modalAjusteStock" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 hidden">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4">
+            <h3 class="text-lg font-bold text-slate-800 mb-1"><i class="bi bi-sliders text-primary-500"></i> Ajustar Stock</h3>
+            <p class="text-sm text-slate-500 mb-4">Equipo: <span id="ajusteNombre" class="font-medium text-slate-700"></span> &mdash; Stock actual: <span id="ajusteStockActual" class="font-semibold"></span></p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Cantidad (+ para agregar, - para restar)</label>
+                    <input id="ajusteCantidad" type="number" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" placeholder="Ej: 10 o -5" />
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Observacion (opcional)</label>
+                    <input id="ajusteObs" type="text" class="w-full px-3 py-2 rounded-xl border border-slate-200 text-sm focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100" placeholder="Motivo del ajuste" />
+                </div>
+            </div>
+            <div class="flex justify-end gap-2 mt-5">
+                <button onclick="cerrarAjusteStock()" class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50">Cancelar</button>
+                <button onclick="confirmarAjusteStock()" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">Aplicar</button>
+            </div>
+        </div>
+    </div>
+}
 
 @section Scripts {
     <script>
@@ -148,6 +181,45 @@
                 } else { alert(data.message); }
             })
             .catch(function() { alert('Error al agregar al carrito.'); });
+        }
+
+        var _ajusteEquipoId = 0;
+
+        function abrirAjusteStock(equipoId, nombre, stockActual) {
+            _ajusteEquipoId = equipoId;
+            document.getElementById('ajusteNombre').textContent = nombre;
+            document.getElementById('ajusteStockActual').textContent = stockActual;
+            document.getElementById('ajusteCantidad').value = '';
+            document.getElementById('ajusteObs').value = '';
+            document.getElementById('modalAjusteStock').classList.remove('hidden');
+        }
+
+        function cerrarAjusteStock() {
+            document.getElementById('modalAjusteStock').classList.add('hidden');
+        }
+
+        function confirmarAjusteStock() {
+            var cantidad = parseInt(document.getElementById('ajusteCantidad').value, 10);
+            if (isNaN(cantidad) || cantidad === 0) {
+                alert('Ingrese una cantidad valida.');
+                return;
+            }
+            var obs = document.getElementById('ajusteObs').value;
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/Equipos/AjustarStock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body: 'id=' + _ajusteEquipoId + '&cantidad=' + cantidad + '&observacion=' + encodeURIComponent(obs)
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    cerrarAjusteStock();
+                    setTimeout(function() { location.reload(); }, 800);
+                } else { alert(data.message); }
+            })
+            .catch(function() { alert('Error al ajustar stock.'); });
         }
     </script>
 }

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
+using TechRent.Middleware;
 using TechRent.Services;
 using TechRent.Services.Payments;
 using TechRent.Settings;
@@ -61,9 +62,32 @@ builder.Services.Configure<EmailSettings>(
 
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddHttpClient<PayPhoneApiLinkService>();
+builder.Services.AddTransient<IPaymentGateway>(sp => sp.GetRequiredService<PayPalService>());
+builder.Services.AddTransient<IPaymentGateway>(sp => sp.GetRequiredService<PayPhoneApiLinkService>());
 builder.Services.AddTransient<IEmailSender<IdentityUser>, GmailEmailSender>();
 builder.Services.AddTransient<TechRent.Services.IEmailSender, GmailEmailSender>();
 builder.Services.AddHttpClient<OllamaService>();
+builder.Services.AddScoped<InventarioService>();
+builder.Services.AddScoped<IAuditService, AuditService>();
+builder.Services.AddSingleton<IEmailQueue, EmailQueue>();
+builder.Services.AddSingleton<IEmailNotificationService, EmailNotificationService>();
+builder.Services.AddHostedService<BackgroundEmailService>();
+builder.Services.Configure<HostOptions>(options =>
+{
+    options.BackgroundServiceExceptionBehavior = BackgroundServiceExceptionBehavior.Ignore;
+});
+
+builder.Services.Configure<DataProtectionTokenProviderOptions>(options =>
+{
+    options.TokenLifespan = TimeSpan.FromHours(2);
+});
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(15);
+    options.Lockout.MaxFailedAccessAttempts = 5;
+    options.Lockout.AllowedForNewUsers = true;
+});
 
 var app = builder.Build();
 
@@ -79,6 +103,8 @@ app.UseRouting();
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+app.UseMiddleware<AuditMiddleware>();
 
 app.UseSession();
 

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using TechRent.Services;
 
 namespace TechRent.Areas.Identity.Pages.Account
 {
@@ -13,10 +14,12 @@ namespace TechRent.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IEmailNotificationService _emailNotification;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager)
+        public LoginModel(SignInManager<IdentityUser> signInManager, IEmailNotificationService emailNotification)
         {
             _signInManager = signInManager;
+            _emailNotification = emailNotification;
         }
 
         [BindProperty]
@@ -75,7 +78,7 @@ namespace TechRent.Areas.Identity.Pages.Account
 
             if (ModelState.IsValid)
             {
-                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(Input.Email, Input.Password, Input.RememberMe, lockoutOnFailure: true);
                 if (result.Succeeded)
                 {
                     return LocalRedirect(returnUrl);
@@ -86,6 +89,7 @@ namespace TechRent.Areas.Identity.Pages.Account
                 }
                 if (result.IsLockedOut)
                 {
+                    await _emailNotification.SendAccountLockedNotificationAsync(Input.Email);
                     return RedirectToPage("./Lockout");
                 }
                 else

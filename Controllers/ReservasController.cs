@@ -1,9 +1,11 @@
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -11,10 +13,16 @@ namespace TechRent.Controllers
     public class ReservasController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly InventarioService _inventario;
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailNotificationService _emailNotification;
 
-        public ReservasController(AppDbContext context)
+        public ReservasController(AppDbContext context, InventarioService inventario, UserManager<IdentityUser> userManager, IEmailNotificationService emailNotification)
         {
             _context = context;
+            _inventario = inventario;
+            _userManager = userManager;
+            _emailNotification = emailNotification;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -94,37 +102,59 @@ namespace TechRent.Controllers
                     return View(reserva);
                 }
 
-                reserva.FechaCreacion = DateTime.UtcNow;
-                reserva.FechaInicio = DateTime.SpecifyKind(reserva.FechaInicio, DateTimeKind.Utc);
-                reserva.FechaFin = DateTime.SpecifyKind(reserva.FechaFin, DateTimeKind.Utc);
-                reserva.MontoTotal = 0;
-
-                _context.Add(reserva);
-                await _context.SaveChangesAsync();
-
-                for (int i = 0; i < equipoIds.Count; i++)
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
                 {
-                    if (!int.TryParse(equipoIds[i], out var equipoId) || !int.TryParse(cantidades[i], out var cantidad)) continue;
-                    var equipo = await _context.Equipos.FindAsync(equipoId);
-                    if (equipo == null || equipo.Stock < cantidad) continue;
+                    reserva.FechaCreacion = DateTime.UtcNow;
+                    reserva.FechaInicio = DateTime.SpecifyKind(reserva.FechaInicio, DateTimeKind.Utc);
+                    reserva.FechaFin = DateTime.SpecifyKind(reserva.FechaFin, DateTimeKind.Utc);
+                    reserva.MontoTotal = 0;
 
-                    equipo.Stock -= cantidad;
-                    var subtotal = cantidad * equipo.PrecioPorDia * cantidadDias;
-                    var detalle = new DetalleReserva
+                    _context.Add(reserva);
+                    await _context.SaveChangesAsync();
+
+                    var userId = _userManager.GetUserId(User);
+
+                    for (int i = 0; i < equipoIds.Count; i++)
                     {
-                        ReservaId = reserva.Id,
-                        EquipoId = equipoId,
-                        Cantidad = cantidad,
-                        CantidadDias = cantidadDias,
-                        PrecioUnitarioPorDia = equipo.PrecioPorDia,
-                        Subtotal = subtotal
-                    };
-                    _context.Add(detalle);
-                    reserva.MontoTotal += subtotal;
-                }
+                        if (!int.TryParse(equipoIds[i], out var equipoId) || !int.TryParse(cantidades[i], out var cantidad)) continue;
+                        var equipo = await _context.Equipos.FindAsync(equipoId);
+                        if (equipo == null || equipo.Stock < cantidad) continue;
 
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                        equipo.Stock -= cantidad;
+                        _inventario.RegistrarMovimiento(equipo, "Venta aprobada", -cantidad,
+                            referencia: $"Reserva #{reserva.Id}",
+                            observacion: $"Se descontaron {cantidad} unidades por reserva",
+                            usuarioId: userId);
+
+                        if (equipo.Stock <= 5)
+                        {
+                            await EnviarAlertaInventarioCriticoAsync(equipo.Nombre, equipo.Stock);
+                        }
+
+                        var subtotal = cantidad * equipo.PrecioPorDia * cantidadDias;
+                        var detalle = new DetalleReserva
+                        {
+                            ReservaId = reserva.Id,
+                            EquipoId = equipoId,
+                            Cantidad = cantidad,
+                            CantidadDias = cantidadDias,
+                            PrecioUnitarioPorDia = equipo.PrecioPorDia,
+                            Subtotal = subtotal
+                        };
+                        _context.Add(detalle);
+                        reserva.MontoTotal += subtotal;
+                    }
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    return RedirectToAction(nameof(Index));
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
 
             if (!tieneEquipos)
@@ -254,21 +284,29 @@ namespace TechRent.Controllers
 
                 try
                 {
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+
                     var dbReserva = await _context.Reservas
                         .Include(r => r.DetalleReservas)
                         .FirstOrDefaultAsync(r => r.Id == id);
-                    if (dbReserva == null) return NotFound();
+                    if (dbReserva == null) { await transaction.RollbackAsync(); return NotFound(); }
 
-                    // Restaurar stock de detalles anteriores y eliminarlos
+                    var userId = _userManager.GetUserId(User);
+
                     foreach (var detalle in dbReserva.DetalleReservas)
                     {
                         var equipo = await _context.Equipos.FindAsync(detalle.EquipoId);
                         if (equipo != null)
+                        {
                             equipo.Stock += detalle.Cantidad;
+                            _inventario.RegistrarMovimiento(equipo, "Devolución aprobada", detalle.Cantidad,
+                                referencia: $"Edición reserva #{dbReserva.Id}",
+                                observacion: $"Se reintegraron {detalle.Cantidad} unidades al editar reserva",
+                                usuarioId: userId);
+                        }
                     }
                     _context.DetalleReservas.RemoveRange(dbReserva.DetalleReservas);
 
-                    // Actualizar campos de la reserva
                     dbReserva.FechaInicio = DateTime.SpecifyKind(reserva.FechaInicio, DateTimeKind.Utc);
                     dbReserva.FechaFin = DateTime.SpecifyKind(reserva.FechaFin, DateTimeKind.Utc);
                     dbReserva.Observaciones = reserva.Observaciones;
@@ -277,7 +315,6 @@ namespace TechRent.Controllers
                     dbReserva.FechaActualizacion = DateTime.UtcNow;
                     dbReserva.MontoTotal = 0;
 
-                    // Procesar nuevos equipos
                     for (int i = 0; i < equipoIds.Count; i++)
                     {
                         if (!int.TryParse(equipoIds[i], out var equipoId) || !int.TryParse(cantidades[i], out var cantidad)) continue;
@@ -285,6 +322,11 @@ namespace TechRent.Controllers
                         if (equipo == null || equipo.Stock < cantidad) continue;
 
                         equipo.Stock -= cantidad;
+                        _inventario.RegistrarMovimiento(equipo, "Venta aprobada", -cantidad,
+                            referencia: $"Reserva #{dbReserva.Id}",
+                            observacion: $"Se descontaron {cantidad} unidades al editar reserva",
+                            usuarioId: userId);
+
                         var subtotal = cantidad * equipo.PrecioPorDia * cantidadDias;
                         _context.Add(new DetalleReserva
                         {
@@ -300,6 +342,7 @@ namespace TechRent.Controllers
                     }
 
                     await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
                     return RedirectToAction(nameof(Index));
                 }
                 catch (DbUpdateConcurrencyException)
@@ -345,5 +388,22 @@ namespace TechRent.Controllers
         }
 
         private bool ReservaExists(int id) => _context.Reservas.Any(e => e.Id == id);
+
+        private async Task EnviarAlertaInventarioCriticoAsync(string equipoNombre, int stockActual)
+        {
+            try
+            {
+                var adminEmails = await _userManager.GetUsersInRoleAsync("Administrador");
+                foreach (var admin in adminEmails)
+                {
+                    if (!string.IsNullOrWhiteSpace(admin.Email))
+                    {
+                        await _emailNotification.SendCriticalInventoryAlertAsync(
+                            admin.Email, equipoNombre, stockActual);
+                    }
+                }
+            }
+            catch { }
+        }
     }
 }

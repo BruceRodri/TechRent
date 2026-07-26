@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using TechRent.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
@@ -15,18 +16,30 @@ namespace TechRent.Controllers
         private readonly AppDbContext _context;
         private readonly PayPhoneApiLinkService _payPhoneService;
         private readonly PayPalService _payPalService;
+        private readonly IEnumerable<IPaymentGateway> _gateways;
         private readonly TechRent.Services.IEmailSender _emailSender;
+        private readonly IEmailNotificationService _emailNotification;
+        private readonly InventarioService _inventario;
+        private readonly UserManager<IdentityUser> _userManager;
 
         public PagoController(
             AppDbContext context,
             PayPhoneApiLinkService payPhoneService,
             PayPalService payPalService,
-            TechRent.Services.IEmailSender emailSender)
+            IEnumerable<IPaymentGateway> gateways,
+            TechRent.Services.IEmailSender emailSender,
+            IEmailNotificationService emailNotification,
+            InventarioService inventario,
+            UserManager<IdentityUser> userManager)
         {
             _context = context;
             _payPhoneService = payPhoneService;
             _payPalService = payPalService;
+            _gateways = gateways;
             _emailSender = emailSender;
+            _emailNotification = emailNotification;
+            _inventario = inventario;
+            _userManager = userManager;
         }
 
         public async Task<IActionResult> CreateLink(int ordenId)
@@ -56,6 +69,7 @@ namespace TechRent.Controllers
                 Proveedor = "PayPhone",
                 PayphonePaymentUrl = link,
                 MontoEnCentavos = ToCents(orden.Total),
+                Moneda = "USD",
                 Estado = "Pendiente"
             };
 
@@ -91,6 +105,7 @@ namespace TechRent.Controllers
                 PayPalOrderId = result.OrderId,
                 PayPalApprovalUrl = result.ApprovalUrl,
                 MontoEnCentavos = ToCents(orden.Total),
+                Moneda = "USD",
                 Estado = "Pendiente",
                 RespuestaGateway = result.RawResponse
             };
@@ -121,22 +136,45 @@ namespace TechRent.Controllers
             transaccion.PayPalCaptureId = capture.CaptureId;
             transaccion.RespuestaGateway = capture.RawResponse;
             transaccion.FechaConfirmacion = DateTime.UtcNow;
+            transaccion.IntentosVerificacion++;
 
             if (capture.Status == "COMPLETED")
             {
-                transaccion.Estado = "Pagado";
-                transaccion.OrdenAlquiler.Estado = "Pagado";
-                transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
-                await DescontarStockAsync(transaccion.OrdenAlquiler);
-                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
-                await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    transaccion.Estado = "Pagado";
+                    transaccion.MensajeRespuesta = "Pago aprobado por PayPal";
+                    transaccion.OrdenAlquiler.Estado = "Pagado";
+                    transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
+                    await DescontarStockAsync(transaccion.OrdenAlquiler);
+                    await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            else if (capture.Status == "VOIDED")
+            {
+                transaccion.Estado = "Cancelado";
+                transaccion.MensajeRespuesta = "Pago cancelado por PayPal";
+                await _context.SaveChangesAsync();
             }
             else
             {
-                transaccion.Estado = capture.Status;
+                transaccion.Estado = "Fallido";
+                transaccion.MensajeRespuesta = $"PayPal devolvió estado: {capture.Status}";
+                await _context.SaveChangesAsync();
+                await _emailNotification.SendPaymentFailedEmailAsync(
+                    transaccion.OrdenAlquiler.UsuarioEmail,
+                    transaccion.OrdenAlquilerId,
+                    $"PayPal devolvió estado: {capture.Status}");
             }
-
-            await _context.SaveChangesAsync();
 
             return RedirectToAction(nameof(Details), new { id = transaccion.Id });
         }
@@ -146,12 +184,27 @@ namespace TechRent.Controllers
             if (!string.IsNullOrWhiteSpace(token))
             {
                 var transaccion = await _context.TransaccionesPago
+                    .Include(t => t.OrdenAlquiler)
+                    .ThenInclude(o => o.Detalles)
                     .FirstOrDefaultAsync(t => t.Proveedor == "PayPal" && t.PayPalOrderId == token);
 
                 if (transaccion != null && transaccion.Estado == "Pendiente")
                 {
-                    transaccion.Estado = "Cancelado";
-                    await _context.SaveChangesAsync();
+                    await using var transaction = await _context.Database.BeginTransactionAsync();
+                    try
+                    {
+                        transaccion.Estado = "Cancelado";
+                        transaccion.MensajeRespuesta = "Pago cancelado por el usuario";
+                        transaccion.FechaConfirmacion = DateTime.UtcNow;
+                        await RestaurarStockAsync(transaccion.OrdenAlquiler);
+                        await _context.SaveChangesAsync();
+                        await transaction.CommitAsync();
+                    }
+                    catch
+                    {
+                        await transaction.RollbackAsync();
+                        throw;
+                    }
                 }
             }
 
@@ -182,13 +235,24 @@ namespace TechRent.Controllers
 
             if (transaccion.Estado != "Pagado")
             {
-                transaccion.Estado = "Pagado";
-                transaccion.FechaConfirmacion = DateTime.UtcNow;
-                transaccion.OrdenAlquiler.Estado = "Pagado";
-                transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
-                await DescontarStockAsync(transaccion.OrdenAlquiler);
-                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
-                await _context.SaveChangesAsync();
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    transaccion.Estado = "Pagado";
+                    transaccion.MensajeRespuesta = "Pago confirmado manualmente por administrador";
+                    transaccion.FechaConfirmacion = DateTime.UtcNow;
+                    transaccion.OrdenAlquiler.Estado = "Pagado";
+                    transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
+                    await DescontarStockAsync(transaccion.OrdenAlquiler);
+                    await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
             }
 
             return RedirectToAction(nameof(Details), new { id });
@@ -225,6 +289,7 @@ namespace TechRent.Controllers
                 PayPalOrderId = result.OrderId,
                 PayPalApprovalUrl = result.ApprovalUrl,
                 MontoEnCentavos = ToCents(orden.Total),
+                Moneda = "USD",
                 Estado = "Pendiente",
                 RespuestaGateway = result.RawResponse
             };
@@ -254,27 +319,53 @@ namespace TechRent.Controllers
             if (transaccion == null)
                 return Json(new { success = false, message = "Transacción no encontrada." });
 
+            if (transaccion.Estado == "Pagado")
+                return Json(new { success = true, redirectUrl = Url.Action("Details", "Pago", new { id = transaccion.Id }) });
+
             var capture = await _payPalService.CaptureOrderAsync(request.PayPalOrderId);
 
             transaccion.PayPalCaptureId = capture.CaptureId;
             transaccion.RespuestaGateway = capture.RawResponse;
             transaccion.FechaConfirmacion = DateTime.UtcNow;
+            transaccion.IntentosVerificacion++;
 
             if (capture.Status == "COMPLETED")
             {
-                transaccion.Estado = "Pagado";
-                transaccion.OrdenAlquiler.Estado = "Pagado";
-                transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
-                await DescontarStockAsync(transaccion.OrdenAlquiler);
-                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
-                await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    transaccion.Estado = "Pagado";
+                    transaccion.MensajeRespuesta = "Pago aprobado por PayPal";
+                    transaccion.OrdenAlquiler.Estado = "Pagado";
+                    transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
+                    await DescontarStockAsync(transaccion.OrdenAlquiler);
+                    await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                    await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                }
+                catch
+                {
+                    await transaction.RollbackAsync();
+                    throw;
+                }
+            }
+            else if (capture.Status == "VOIDED")
+            {
+                transaccion.Estado = "Cancelado";
+                transaccion.MensajeRespuesta = "Pago cancelado por PayPal";
+                await _context.SaveChangesAsync();
             }
             else
             {
-                transaccion.Estado = capture.Status;
+                transaccion.Estado = "Fallido";
+                transaccion.MensajeRespuesta = $"PayPal devolvió estado: {capture.Status}";
+                await _context.SaveChangesAsync();
+                await _emailNotification.SendPaymentFailedEmailAsync(
+                    transaccion.OrdenAlquiler.UsuarioEmail,
+                    transaccion.OrdenAlquilerId,
+                    $"PayPal devolvió estado: {capture.Status}");
             }
-
-            await _context.SaveChangesAsync();
 
             return Json(new
             {
@@ -285,11 +376,55 @@ namespace TechRent.Controllers
 
         private async Task DescontarStockAsync(OrdenAlquiler orden)
         {
+            const int umbralCritico = 5;
+
             foreach (var detalle in orden.Detalles)
             {
                 var equipo = await _context.Equipos.FindAsync(detalle.EquipoId);
                 if (equipo != null)
+                {
                     equipo.Stock = Math.Max(0, equipo.Stock - detalle.Cantidad);
+                    _inventario.RegistrarMovimiento(equipo, "Venta aprobada", -detalle.Cantidad,
+                        referencia: $"Orden #{orden.Id}",
+                        observacion: $"Pago confirmado - descuento de stock");
+
+                    if (equipo.Stock <= umbralCritico)
+                    {
+                        await EnviarAlertaInventarioCriticoAsync(equipo.Nombre, equipo.Stock);
+                    }
+                }
+            }
+        }
+
+        private async Task EnviarAlertaInventarioCriticoAsync(string equipoNombre, int stockActual)
+        {
+            try
+            {
+                var adminEmails = await _userManager.GetUsersInRoleAsync("Administrador");
+                foreach (var admin in adminEmails)
+                {
+                    if (!string.IsNullOrWhiteSpace(admin.Email))
+                    {
+                        await _emailNotification.SendCriticalInventoryAlertAsync(
+                            admin.Email, equipoNombre, stockActual);
+                    }
+                }
+            }
+            catch { }
+        }
+
+        private async Task RestaurarStockAsync(OrdenAlquiler orden)
+        {
+            foreach (var detalle in orden.Detalles)
+            {
+                var equipo = await _context.Equipos.FindAsync(detalle.EquipoId);
+                if (equipo != null)
+                {
+                    equipo.Stock += detalle.Cantidad;
+                    _inventario.RegistrarMovimiento(equipo, "Pago cancelado", detalle.Cantidad,
+                        referencia: $"Orden #{orden.Id}",
+                        observacion: $"Pago cancelado - stock restaurado");
+                }
             }
         }
 
@@ -369,6 +504,78 @@ namespace TechRent.Controllers
             {
                 // No fallar el pago por error de email
             }
+        }
+
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> MarcarFallido(int id)
+        {
+            var transaccion = await _context.TransaccionesPago
+                .Include(t => t.OrdenAlquiler)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaccion == null) return NotFound();
+
+            if (transaccion.Estado == "Pendiente")
+            {
+                transaccion.Estado = "Fallido";
+                transaccion.MensajeRespuesta = "Pago marcado como fallido por administrador";
+                transaccion.FechaConfirmacion = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> MarcarExpirado(int id)
+        {
+            var transaccion = await _context.TransaccionesPago
+                .Include(t => t.OrdenAlquiler)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaccion == null) return NotFound();
+
+            if (transaccion.Estado == "Pendiente")
+            {
+                transaccion.Estado = "Expirado";
+                transaccion.MensajeRespuesta = "Pago marcado como expirado por administrador";
+                transaccion.FechaConfirmacion = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> MarcarReembolsado(int id)
+        {
+            var transaccion = await _context.TransaccionesPago
+                .Include(t => t.OrdenAlquiler)
+                .ThenInclude(o => o.Detalles)
+                .FirstOrDefaultAsync(t => t.Id == id);
+
+            if (transaccion == null) return NotFound();
+
+            if (transaccion.Estado == "Pagado")
+            {
+                await using var dbTransaction = await _context.Database.BeginTransactionAsync();
+                try
+                {
+                    transaccion.Estado = "Reembolsado";
+                    transaccion.MensajeRespuesta = "Reembolso procesado por administrador";
+                    transaccion.FechaConfirmacion = DateTime.UtcNow;
+                    await RestaurarStockAsync(transaccion.OrdenAlquiler);
+                    await _context.SaveChangesAsync();
+                    await dbTransaction.CommitAsync();
+                }
+                catch
+                {
+                    await dbTransaction.RollbackAsync();
+                    throw;
+                }
+            }
+
+            return RedirectToAction(nameof(Details), new { id });
         }
     }
 

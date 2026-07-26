@@ -3,11 +3,16 @@
 }
 
 <div class="fade-in">
-    <div class="mb-6">
-        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <i class="bi bi-bar-chart-fill text-primary-500"></i> Panel de Reportes
-        </h1>
-        <p class="text-sm text-slate-400">Indicadores y estadisticas del sistema TechRent</p>
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="bi bi-bar-chart-fill text-primary-500"></i> Panel de Reportes
+            </h1>
+            <p class="text-sm text-slate-400">Indicadores y estadisticas del sistema TechRent</p>
+        </div>
+        <a asp-action="Transacciones" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
+            <i class="bi bi-credit-card"></i> Ver Transacciones de Pago
+        </a>
     </div>
 
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">

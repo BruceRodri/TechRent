@@ -1,0 +1,115 @@
+@model IEnumerable<TechRent.Models.MovimientoInventario>
+
+@{
+    ViewData["Title"] = "Movimientos de Inventario";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-arrow-left-right text-primary-500"></i> Movimientos de Inventario
+        </h1>
+        <p class="text-sm text-slate-400">Historial completo de movimientos de stock</p>
+    </div>
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <select name="equipoId" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100">
+            <option value="">Todos los equipos</option>
+            @foreach (var e in (IEnumerable<dynamic>)ViewData["Equipos"]!)
+            {
+                <option value="@e.Id" selected="@(ViewBag.EquipoId != null && (int)ViewBag.EquipoId == e.Id)">@e.Nombre</option>
+            }
+        </select>
+        <select name="tipoMovimiento" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100">
+            <option value="">Todos los tipos</option>
+            <option value="Venta aprobada" selected="@(ViewBag.TipoMovimiento == "Venta aprobada")">Venta aprobada</option>
+            <option value="Pago cancelado" selected="@(ViewBag.TipoMovimiento == "Pago cancelado")">Pago cancelado</option>
+            <option value="Devolución aprobada" selected="@(ViewBag.TipoMovimiento == "Devolución aprobada")">Devolución aprobada</option>
+            <option value="Ajuste de inventario (+)" selected="@(ViewBag.TipoMovimiento == "Ajuste de inventario (+)")">Ajuste (+)</option>
+            <option value="Ajuste de inventario (-)" selected="@(ViewBag.TipoMovimiento == "Ajuste de inventario (-)")">Ajuste (-)</option>
+        </select>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition"><i class="bi bi-search"></i> Filtrar</button>
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition"><i class="bi bi-x-circle"></i> Limpiar</a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-calendar mr-1"></i> Fecha</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-laptop mr-1"></i> Equipo</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-arrow-left-right mr-1"></i> Tipo</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-hash mr-1"></i> Cantidad</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Stock Anterior</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500">Stock Posterior</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-info-circle mr-1"></i> Referencia</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-chat-left-text mr-1"></i> Observacion</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="8" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay movimientos registrados.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var item in Model)
+                    {
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-4 py-3 text-slate-600 whitespace-nowrap">@item.FechaMovimiento.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="px-4 py-3">
+                                <span class="font-medium text-slate-700">@item.Equipo?.Nombre</span>
+                            </td>
+                            <td class="px-4 py-3">
+                                @if (item.TipoMovimiento.Contains("cancelado") || item.TipoMovimiento.Contains("(-)"))
+                                {
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-xs font-medium">@item.TipoMovimiento</span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">@item.TipoMovimiento</span>
+                                }
+                            </td>
+                            <td class="px-4 py-3">
+                                <span class="font-semibold @(item.Cantidad > 0 ? "text-emerald-600" : "text-rose-600")">
+                                    @(item.Cantidad > 0 ? "+" : "")@item.Cantidad
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-500">@item.StockAnterior</td>
+                            <td class="px-4 py-3 text-slate-700 font-medium">@item.StockPosterior</td>
+                            <td class="px-4 py-3 text-slate-500 text-xs">@(item.Referencia ?? "—")</td>
+                            <td class="px-4 py-3 text-slate-400 text-xs">@(item.Observacion ?? "—")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="flex justify-center items-center gap-2 mt-6">
+            @if ((int)ViewBag.PageNumber > 1)
+            {
+                <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber - 1)" asp-route-equipoId="@ViewBag.EquipoId" asp-route-tipoMovimiento="@ViewBag.TipoMovimiento"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            }
+            <span class="px-3 py-2 text-sm text-slate-500">
+                Pagina <span class="font-semibold text-slate-700">@ViewBag.PageNumber</span> de @ViewBag.TotalPages
+            </span>
+            @if ((int)ViewBag.PageNumber < (int)ViewBag.TotalPages)
+            {
+                <a asp-action="Index" asp-route-pageNumber="@((int)ViewBag.PageNumber + 1)" asp-route-equipoId="@ViewBag.EquipoId" asp-route-tipoMovimiento="@ViewBag.TipoMovimiento"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>

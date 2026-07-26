@@ -58,6 +58,12 @@
                         {
                             <a asp-controller="Clientes" asp-action="Index"
                                class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Clientes</a>
+                            <a asp-controller="MovimientosInventario" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Inventario</a>
+                            <a asp-controller="Bitacora" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Bitacora</a>
+                            <a asp-controller="AdminMfa" asp-action="Index"
+                               class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">MFA Admin</a>
                         }
                         <a asp-controller="Reportes" asp-action="Index"
                            class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Reportes</a>
@@ -136,6 +142,9 @@
                 @if (User.IsInRole("Administrador"))
                 {
                     <a asp-controller="Clientes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Clientes</a>
+                    <a asp-controller="MovimientosInventario" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Inventario</a>
+                    <a asp-controller="Bitacora" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Bitacora</a>
+                    <a asp-controller="AdminMfa" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">MFA Admin</a>
                 }
                 <a asp-controller="Reportes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Reportes</a>
                 <a asp-controller="Ia" asp-action="Index" class="block py-2 text-sm font-medium text-primary-600">Asistente IA</a>

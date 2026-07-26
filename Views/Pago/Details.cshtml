@@ -3,8 +3,15 @@
 @{
     ViewData["Title"] = "Detalle del Pago";
 
-    var statusColors = Model.Estado == "Pagado" ? "emerald"
-                     : Model.Estado == "Cancelado" ? "rose" : "amber";
+    var statusColors = Model.Estado switch
+    {
+        "Pagado" => "emerald",
+        "Cancelado" => "rose",
+        "Fallido" => "red",
+        "Expirado" => "slate",
+        "Reembolsado" => "purple",
+        _ => "amber"
+    };
 }
 
 <div class="max-w-lg mx-auto fade-in">
@@ -31,16 +38,59 @@
                     <span class="inline-flex px-2 py-0.5 rounded-md bg-@statusColors-50 text-@statusColors-600 text-xs font-medium">@Model.Estado</span>
                 </div>
                 <div>
-                    <span class="text-xs text-slate-400 block">Total</span>
+                    <span class="text-xs text-slate-400 block">Monto</span>
                     <span class="text-lg font-bold text-emerald-600">$@((Model.MontoEnCentavos / 100m).ToString("0.00"))</span>
                 </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Moneda</span>
+                    <span class="text-sm font-semibold text-slate-700">@Model.Moneda</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Intentos de verificacion</span>
+                    <span class="text-sm font-semibold text-slate-700">@Model.IntentosVerificacion</span>
+                </div>
             </div>
+
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div>
+                    <span class="text-xs text-slate-400 block">Fecha creacion</span>
+                    <span class="text-sm text-slate-600">@Model.FechaCreacion.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+                <div>
+                    <span class="text-xs text-slate-400 block">Fecha confirmacion</span>
+                    <span class="text-sm text-slate-600">@(Model.FechaConfirmacion?.ToLocalTime().ToString("dd/MM/yyyy HH:mm") ?? "Pendiente")</span>
+                </div>
+            </div>
+
+            @if (!string.IsNullOrWhiteSpace(Model.MensajeRespuesta))
+            {
+                <div class="bg-slate-50 rounded-xl px-4 py-3 mb-4">
+                    <span class="text-xs text-slate-400 block mb-1">Mensaje de respuesta</span>
+                    <span class="text-sm text-slate-600">@Model.MensajeRespuesta</span>
+                </div>
+            }
 
             @if (!string.IsNullOrWhiteSpace(Model.ClientTransactionId))
             {
                 <div class="bg-slate-50 rounded-xl px-4 py-3 mb-4">
                     <span class="text-xs text-slate-400 block mb-1">Transaccion cliente</span>
                     <code class="text-xs font-mono text-slate-600 break-all">@Model.ClientTransactionId</code>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.PayPalOrderId))
+            {
+                <div class="bg-slate-50 rounded-xl px-4 py-3 mb-4">
+                    <span class="text-xs text-slate-400 block mb-1">PayPal Order ID</span>
+                    <code class="text-xs font-mono text-slate-600 break-all">@Model.PayPalOrderId</code>
+                </div>
+            }
+
+            @if (!string.IsNullOrWhiteSpace(Model.PayPalCaptureId))
+            {
+                <div class="bg-slate-50 rounded-xl px-4 py-3 mb-4">
+                    <span class="text-xs text-slate-400 block mb-1">PayPal Capture ID</span>
+                    <code class="text-xs font-mono text-slate-600 break-all">@Model.PayPalCaptureId</code>
                 </div>
             }
 
@@ -93,9 +143,27 @@
 
             @if (User.IsInRole("Administrador") && Model.Estado == "Pendiente")
             {
-                <a class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition shadow-sm mt-4"
-                   asp-action="MarcarPagado" asp-route-id="@Model.Id">
-                    <i class="bi bi-check2-circle"></i> Marcar como pagado (demo)
+                <div class="flex flex-col gap-2 mt-4">
+                    <a class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-500 text-white text-sm font-medium hover:bg-amber-600 transition shadow-sm"
+                       asp-action="MarcarPagado" asp-route-id="@Model.Id">
+                        <i class="bi bi-check2-circle"></i> Marcar como pagado (demo)
+                    </a>
+                    <a class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-red-500 text-white text-sm font-medium hover:bg-red-600 transition shadow-sm"
+                       asp-action="MarcarFallido" asp-route-id="@Model.Id">
+                        <i class="bi bi-x-circle"></i> Marcar como fallido
+                    </a>
+                    <a class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-500 text-white text-sm font-medium hover:bg-slate-600 transition shadow-sm"
+                       asp-action="MarcarExpirado" asp-route-id="@Model.Id">
+                        <i class="bi bi-clock-history"></i> Marcar como expirado
+                    </a>
+                </div>
+            }
+
+            @if (User.IsInRole("Administrador") && Model.Estado == "Pagado")
+            {
+                <a class="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-purple-500 text-white text-sm font-medium hover:bg-purple-600 transition shadow-sm mt-4"
+                   asp-action="MarcarReembolsado" asp-route-id="@Model.Id">
+                    <i class="bi bi-arrow-counterclockwise"></i> Marcar como reembolsado
                 </a>
             }
         </div>

@@ -18,13 +18,14 @@ namespace TechRent.Models
         public bool Activo { get; set; } = true;
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime? FechaActualizacion { get; set; }
-        // Llaves foráneas
+        [Timestamp]
+        public byte[] RowVersion { get; set; } = null!;
         public int CategoriaId { get; set; }
         public Categoria Categoria { get; set; } = null!;
         public int MarcaId { get; set; }
         public Marca Marca { get; set; } = null!;
-        // Relación: un equipo puede estar en muchos detalles de reserva
         public ICollection<DetalleReserva> DetalleReservas { get; set; } = new List<DetalleReserva>();
+        public ICollection<MovimientoInventario> MovimientosInventario { get; set; } = new List<MovimientoInventario>();
         public DateTime? FechaEliminacion { get; set; }
     }
 }

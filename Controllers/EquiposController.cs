@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -11,10 +12,12 @@ namespace TechRent.Controllers
     public class EquiposController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly InventarioService _inventario;
 
-        public EquiposController(AppDbContext context)
+        public EquiposController(AppDbContext context, InventarioService inventario)
         {
             _context = context;
+            _inventario = inventario;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -240,6 +243,37 @@ namespace TechRent.Controllers
         {
             var count = await _context.Equipos.CountAsync();
             return Ok(count);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [Authorize(Roles = "Administrador")]
+        public async Task<IActionResult> AjustarStock(int id, int cantidad, string? observacion)
+        {
+            var equipo = await _context.Equipos.FindAsync(id);
+            if (equipo == null)
+                return Json(new { success = false, message = "Equipo no encontrado." });
+
+            if (cantidad == 0)
+                return Json(new { success = false, message = "La cantidad no puede ser 0." });
+
+            if (equipo.Stock + cantidad < 0)
+                return Json(new { success = false, message = $"Stock insuficiente. Stock actual: {equipo.Stock}." });
+
+            var tipoMovimiento = cantidad > 0 ? "Ajuste de inventario (+)" : "Ajuste de inventario (-)";
+            equipo.Stock += cantidad;
+            _inventario.RegistrarMovimiento(equipo, tipoMovimiento, cantidad,
+                referencia: "Ajuste manual",
+                observacion: string.IsNullOrWhiteSpace(observacion) ? $"Ajuste manual de {cantidad} unidades" : observacion);
+
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                message = $"Stock actualizado: {equipo.Stock} unidades.",
+                newStock = equipo.Stock
+            });
         }
     }
 }
