@@ -8,9 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 namespace TechRent.Areas.Identity.Pages.Account
@@ -20,24 +18,24 @@ namespace TechRent.Areas.Identity.Pages.Account
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
         private readonly ILogger<RegisterModel> _logger;
+        private readonly IEmailSender<IdentityUser> _emailSender;
 
         public RegisterModel(
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             SignInManager<IdentityUser> signInManager,
-            RoleManager<IdentityRole> roleManager,
-            ILogger<RegisterModel> logger)
+            ILogger<RegisterModel> logger,
+            IEmailSender<IdentityUser> emailSender)
         {
             _userManager = userManager;
             _userStore = userStore;
             _emailStore = GetEmailStore();
             _signInManager = signInManager;
-            _roleManager = roleManager;
             _logger = logger;
+            _emailSender = emailSender;
         }
 
         [BindProperty]
@@ -46,8 +44,6 @@ namespace TechRent.Areas.Identity.Pages.Account
         public string ReturnUrl { get; set; }
 
         public IList<AuthenticationScheme> ExternalLogins { get; set; }
-
-        public List<SelectListItem> RolesList { get; set; }
 
         public class InputModel
         {
@@ -66,28 +62,18 @@ namespace TechRent.Areas.Identity.Pages.Account
             [Display(Name = "Confirmar contrasena")]
             [Compare("Password", ErrorMessage = "La contrasena y la confirmacion no coinciden.")]
             public string ConfirmPassword { get; set; }
-
-            [Required(ErrorMessage = "Debes seleccionar un rol.")]
-            [Display(Name = "Rol")]
-            public string SelectedRole { get; set; }
         }
 
         public async Task OnGetAsync(string returnUrl = null)
         {
             ReturnUrl = returnUrl;
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            RolesList = (await _roleManager.Roles.ToListAsync())
-                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                .ToList();
         }
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
-            RolesList = (await _roleManager.Roles.ToListAsync())
-                .Select(r => new SelectListItem { Value = r.Name, Text = r.Name })
-                .ToList();
 
             if (ModelState.IsValid)
             {
@@ -101,13 +87,19 @@ namespace TechRent.Areas.Identity.Pages.Account
                 {
                     _logger.LogInformation("Usuario creo una nueva cuenta con contrasena.");
 
-                    if (!string.IsNullOrEmpty(Input.SelectedRole))
-                    {
-                        await _userManager.AddToRoleAsync(user, Input.SelectedRole);
-                    }
+                    await _userManager.AddToRoleAsync(user, "Cliente");
 
-                    await _signInManager.SignInAsync(user, isPersistent: false);
-                    return LocalRedirect(returnUrl);
+                    var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                    code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                    var callbackUrl = Url.Page(
+                        "/Account/ConfirmEmail",
+                        pageHandler: null,
+                        values: new { area = "Identity", userId = user.Id, code = code },
+                        protocol: Request.Scheme);
+
+                    await _emailSender.SendConfirmationLinkAsync(user, Input.Email, callbackUrl);
+
+                    return RedirectToPage("./RegisterConfirmation", new { Email = Input.Email });
                 }
 
                 foreach (var error in result.Errors)

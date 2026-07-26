@@ -21,7 +21,7 @@ namespace TechRent.Areas.Identity.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly IUserEmailStore<IdentityUser> _emailStore;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailSender<IdentityUser> _emailSender;
         private readonly ILogger<ExternalLoginModel> _logger;
 
         public ExternalLoginModel(
@@ -29,7 +29,7 @@ namespace TechRent.Areas.Identity.Pages.Account
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             ILogger<ExternalLoginModel> logger,
-            IEmailSender emailSender)
+            IEmailSender<IdentityUser> emailSender)
         {
             _signInManager = signInManager;
             _userManager = userManager;
@@ -98,15 +98,62 @@ namespace TechRent.Areas.Identity.Pages.Account
             }
             else
             {
-                ReturnUrl = returnUrl;
-                ProviderDisplayName = info.ProviderDisplayName;
-                if (info.Principal.HasClaim(c => c.Type == ClaimTypes.Email))
+                var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+                if (string.IsNullOrEmpty(email))
                 {
-                    Input = new InputModel
-                    {
-                        Email = info.Principal.FindFirstValue(ClaimTypes.Email)
-                    };
+                    ErrorMessage = "No se pudo obtener el correo del proveedor externo.";
+                    return RedirectToPage("./Login", new { ReturnUrl = returnUrl });
                 }
+
+                var existingUser = await _userManager.FindByEmailAsync(email);
+                if (existingUser != null)
+                {
+                    var loginResult = await _userManager.AddLoginAsync(existingUser, info);
+                    if (loginResult.Succeeded)
+                    {
+                        if (!existingUser.EmailConfirmed)
+                        {
+                            var code = await _userManager.GenerateEmailConfirmationTokenAsync(existingUser);
+                            code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                            var callbackUrl = Url.Page(
+                                "/Account/ConfirmEmail",
+                                pageHandler: null,
+                                values: new { area = "Identity", userId = existingUser.Id, code = code },
+                                protocol: Request.Scheme);
+                        await _emailSender.SendConfirmationLinkAsync(existingUser, email, callbackUrl);
+                            return RedirectToPage("./RegisterConfirmation", new { Email = email });
+                        }
+                        await _signInManager.SignInAsync(existingUser, isPersistent: false, info.LoginProvider);
+                        return LocalRedirect(returnUrl);
+                    }
+                }
+                else
+                {
+                    var user = CreateUser();
+                    await _userStore.SetUserNameAsync(user, email, CancellationToken.None);
+                    await _emailStore.SetEmailAsync(user, email, CancellationToken.None);
+                    var createResult = await _userManager.CreateAsync(user);
+                    if (createResult.Succeeded)
+                    {
+                        await _userManager.AddLoginAsync(user, info);
+                        var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                        code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
+                        var callbackUrl = Url.Page(
+                            "/Account/ConfirmEmail",
+                            pageHandler: null,
+                            values: new { area = "Identity", userId = user.Id, code = code },
+                            protocol: Request.Scheme);
+                        await _emailSender.SendConfirmationLinkAsync(user, email, callbackUrl);
+                        return RedirectToPage("./RegisterConfirmation", new { Email = email });
+                    }
+                    foreach (var error in createResult.Errors)
+                    {
+                        ModelState.AddModelError(string.Empty, error.Description);
+                    }
+                }
+
+                ProviderDisplayName = info.ProviderDisplayName;
+                ReturnUrl = returnUrl;
                 return Page();
             }
         }
@@ -145,8 +192,7 @@ namespace TechRent.Areas.Identity.Pages.Account
                             values: new { area = "Identity", userId = userId, code = code },
                             protocol: Request.Scheme);
 
-                        await _emailSender.SendEmailAsync(Input.Email, "Confirma tu correo en TechRent",
-                            $"Por favor confirma tu cuenta haciendo <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>clic aqui</a>.");
+                        await _emailSender.SendConfirmationLinkAsync(user, Input.Email, callbackUrl);
 
                         if (_userManager.Options.SignIn.RequireConfirmedAccount)
                         {

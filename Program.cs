@@ -30,7 +30,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequiredLength = 4;
     options.User.RequireUniqueEmail = true;
-    options.SignIn.RequireConfirmedEmail = false;
+    options.SignIn.RequireConfirmedEmail = true;
 })
 .AddEntityFrameworkStores<AppDbContext>()
 .AddDefaultUI()
@@ -61,7 +61,8 @@ builder.Services.Configure<EmailSettings>(
 
 builder.Services.AddHttpClient<PayPalService>();
 builder.Services.AddHttpClient<PayPhoneApiLinkService>();
-builder.Services.AddTransient<IEmailSender, GmailEmailSender>();
+builder.Services.AddTransient<IEmailSender<IdentityUser>, GmailEmailSender>();
+builder.Services.AddTransient<TechRent.Services.IEmailSender, GmailEmailSender>();
 builder.Services.AddHttpClient<OllamaService>();
 
 var app = builder.Build();

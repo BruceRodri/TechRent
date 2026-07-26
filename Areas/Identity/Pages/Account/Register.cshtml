@@ -40,18 +40,11 @@
                 </div>
 
                 <div class="mb-6">
-                    <label asp-for="Input.SelectedRole" class="block text-sm font-medium text-slate-600 mb-1.5">Rol</label>
-                    <select asp-for="Input.SelectedRole" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition bg-white" asp-items="Model.RolesList">
-                        <option value="">-- Selecciona un rol --</option>
-                    </select>
-                    <span asp-validation-for="Input.SelectedRole" class="text-rose-500 text-xs mt-1 block"></span>
-                    <p class="text-xs text-slate-400 mt-1">Elige el rol que se te asignara en el sistema.</p>
+                    <button id="registerSubmit" type="submit"
+                            class="w-full py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                        Registrarse
+                    </button>
                 </div>
-
-                <button id="registerSubmit" type="submit"
-                        class="w-full py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
-                    Registrarse
-                </button>
             </form>
 
             @if (Model.ExternalLogins?.Count > 0)

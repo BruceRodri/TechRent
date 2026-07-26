@@ -7,16 +7,32 @@
 <div class="min-h-[70vh] flex items-center justify-center fade-in">
     <div class="w-full max-w-md">
         <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8 text-center">
-            <div class="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-emerald-500">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            </div>
-            <h2 class="text-xl font-bold text-slate-800 mb-2">@ViewData["Title"]</h2>
-            <p class="text-sm text-slate-500 mb-6">@Model.StatusMessage</p>
-            <a asp-page="./Login" class="inline-block px-6 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
-                Ir a iniciar sesion
-            </a>
+            @if (Model.IsSuccess)
+            {
+                <div class="w-16 h-16 rounded-2xl bg-emerald-100 flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-emerald-500">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Correo confirmado</h2>
+                <p class="text-sm text-slate-500 mb-6">@Model.StatusMessage</p>
+                <a asp-area="" asp-controller="Home" asp-action="Index" class="inline-block px-6 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                    <i class="bi bi-house-door"></i> Ir al inicio
+                </a>
+            }
+            else
+            {
+                <div class="w-16 h-16 rounded-2xl bg-rose-100 flex items-center justify-center mx-auto mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" viewBox="0 0 24 24" stroke="currentColor" class="text-rose-500">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-slate-800 mb-2">Error</h2>
+                <p class="text-sm text-slate-500 mb-6">@Model.StatusMessage</p>
+                <a asp-area="Identity" asp-page="/Account/Login" class="inline-block px-6 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                    Ir a iniciar sesion
+                </a>
+            }
         </div>
     </div>
 </div>

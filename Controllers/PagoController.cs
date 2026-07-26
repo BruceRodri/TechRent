@@ -1,6 +1,6 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity.UI.Services;
+using TechRent.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
@@ -15,13 +15,13 @@ namespace TechRent.Controllers
         private readonly AppDbContext _context;
         private readonly PayPhoneApiLinkService _payPhoneService;
         private readonly PayPalService _payPalService;
-        private readonly IEmailSender _emailSender;
+        private readonly TechRent.Services.IEmailSender _emailSender;
 
         public PagoController(
             AppDbContext context,
             PayPhoneApiLinkService payPhoneService,
             PayPalService payPalService,
-            IEmailSender emailSender)
+            TechRent.Services.IEmailSender emailSender)
         {
             _context = context;
             _payPhoneService = payPhoneService;

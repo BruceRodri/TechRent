@@ -13,14 +13,18 @@ namespace TechRent.Areas.Identity.Pages.Account
     public class ConfirmEmailModel : PageModel
     {
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly SignInManager<IdentityUser> _signInManager;
 
-        public ConfirmEmailModel(UserManager<IdentityUser> userManager)
+        public ConfirmEmailModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
         }
 
         [TempData]
         public string StatusMessage { get; set; }
+
+        public bool IsSuccess { get; set; }
 
         public async Task<IActionResult> OnGetAsync(string userId, string code)
         {
@@ -37,7 +41,17 @@ namespace TechRent.Areas.Identity.Pages.Account
 
             code = Encoding.UTF8.GetString(WebEncoders.Base64UrlDecode(code));
             var result = await _userManager.ConfirmEmailAsync(user, code);
-            StatusMessage = result.Succeeded ? "Tu correo ha sido confirmado correctamente." : "Error al confirmar el correo.";
+            if (result.Succeeded)
+            {
+                StatusMessage = "Tu correo ha sido confirmado correctamente. Ya puedes iniciar sesion.";
+                IsSuccess = true;
+                await _signInManager.SignInAsync(user, isPersistent: false);
+            }
+            else
+            {
+                StatusMessage = "Error al confirmar el correo.";
+                IsSuccess = false;
+            }
             return Page();
         }
     }

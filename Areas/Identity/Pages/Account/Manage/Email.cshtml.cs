@@ -16,9 +16,9 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly SignInManager<IdentityUser> _signInManager;
-        private readonly IEmailSender _emailSender;
+        private readonly IEmailSender<IdentityUser> _emailSender;
 
-        public EmailModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender emailSender)
+        public EmailModel(UserManager<IdentityUser> userManager, SignInManager<IdentityUser> signInManager, IEmailSender<IdentityUser> emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -72,7 +72,7 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
                 var code = await _userManager.GenerateChangeEmailTokenAsync(user, Input.NewEmail);
                 code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
                 var callbackUrl = Url.Page("/Account/ConfirmEmailChange", pageHandler: null, values: new { area = "Identity", userId = userId, email = Input.NewEmail, code = code }, protocol: Request.Scheme);
-                await _emailSender.SendEmailAsync(Input.NewEmail, "Confirma tu nuevo correo", $"Haz clic en el enlace para confirmar: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Confirmar</a>.");
+                await _emailSender.SendConfirmationLinkAsync(user, Input.NewEmail, callbackUrl);
                 StatusMessage = "Se ha enviado un enlace de confirmacion a tu nuevo correo.";
                 return RedirectToPage();
             }
@@ -93,7 +93,7 @@ namespace TechRent.Areas.Identity.Pages.Account.Manage
             var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
             code = WebEncoders.Base64UrlEncode(Encoding.UTF8.GetBytes(code));
             var callbackUrl = Url.Page("/Account/ConfirmEmail", pageHandler: null, values: new { area = "Identity", userId = userId, code = code }, protocol: Request.Scheme);
-            await _emailSender.SendEmailAsync(email, "Confirma tu correo", $"Haz clic en el enlace para confirmar: <a href='{HtmlEncoder.Default.Encode(callbackUrl)}'>Confirmar</a>.");
+            await _emailSender.SendConfirmationLinkAsync(user, email, callbackUrl);
             StatusMessage = "Correo de verificacion enviado. Revisa tu bandeja de entrada.";
             return RedirectToPage();
         }
