@@ -1,0 +1,24 @@
+@page
+@model ShowRecoveryCodesModel
+@{
+    ViewData["Title"] = "Codigos de recuperacion";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Guarda estos codigos en un lugar seguro. Los necesitaras si pierdes tu dispositivo de autenticacion.</p>
+
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-xl px-4 py-3 mb-6">
+        <strong>Guarda estos codigos en un lugar seguro.</strong> Los necesitaras si pierdes tu dispositivo de autenticacion.
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-6">
+        @foreach (var recoveryCode in Model.RecoveryCodes)
+        {
+            <div class="px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-center">
+                <code class="text-sm font-mono font-semibold text-slate-700 tracking-wider">@recoveryCode</code>
+            </div>
+        }
+    </div>
+</div>

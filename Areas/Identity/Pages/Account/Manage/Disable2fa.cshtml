@@ -1,0 +1,22 @@
+@page
+@model Disable2faModel
+@{
+    ViewData["Title"] = "Desactivar autenticacion de dos factores";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Desactiva la autenticacion de dos factores en tu cuenta</p>
+
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-xl px-4 py-3 mb-6">
+        <strong>Advertencia:</strong> Desactivar 2FA reduce la seguridad de tu cuenta.
+    </div>
+
+    <form method="post" class="inline">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition shadow-sm">
+            <i class="bi bi-shield-x mr-1"></i> Desactivar 2FA
+        </button>
+    </form>
+</div>

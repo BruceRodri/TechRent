@@ -135,6 +135,7 @@ namespace TechRent.Controllers
             return RedirectToAction(nameof(Index));
         }
 
+        [AllowAnonymous]
         public async Task<IActionResult> GetCount()
         {
             var count = await _context.Categorias.CountAsync();

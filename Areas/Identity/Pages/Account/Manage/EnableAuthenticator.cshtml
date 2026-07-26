@@ -6,54 +6,70 @@
 }
 
 <partial name="_StatusMessage" for="StatusMessage" />
-<h3>@ViewData["Title"]</h3>
-<div>
-    <p>Para usar una aplicacion de autenticacion, siga los siguientes pasos:</p>
-    <ol class="list">
-        <li>
-            <p>
-                Descargue una aplicacion de autenticacion de dos factores como Microsoft Authenticator para
-                <a href="https://go.microsoft.com/fwlink/?Linkid=825072">Android</a> y
-                <a href="https://go.microsoft.com/fwlink/?Linkid=825073">iOS</a> o
-                Google Authenticator para
-                <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en">Android</a> y
-                <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8">iOS</a>.
-            </p>
-        </li>
-        <li>
-            <p>Escanee el codigo QR o ingrese esta clave <kbd>@Model.SharedKey</kbd> en su aplicacion de autenticacion de dos factores. Los espacios y las mayusculas no importan.</p>
 
-            <div id="qrCode" class="mb-3"></div>
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-2">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-500 mb-6">Para usar una aplicacion de autenticacion, siga los siguientes pasos:</p>
+
+    <ol class="space-y-6">
+        <li class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <div>
+                <p class="text-sm text-slate-600 mb-2">
+                    Descargue una aplicacion de autenticacion de dos factores como Microsoft Authenticator para
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825072" class="text-primary-500 hover:text-primary-600 font-medium">Android</a> y
+                    <a href="https://go.microsoft.com/fwlink/?Linkid=825073" class="text-primary-500 hover:text-primary-600 font-medium">iOS</a> o
+                    Google Authenticator para
+                    <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2&amp;hl=en" class="text-primary-500 hover:text-primary-600 font-medium">Android</a> y
+                    <a href="https://itunes.apple.com/us/app/google-authenticator/id388497605?mt=8" class="text-primary-500 hover:text-primary-600 font-medium">iOS</a>.
+                </p>
+            </div>
         </li>
-        <li>
-            <p>
-                Una vez que haya escaneado el codigo QR o ingresado la clave anterior, su aplicacion de autenticacion de dos factores le proporcionara
-                un codigo unico. Ingrese el codigo en el cuadro de confirmacion a continuacion.
-            </p>
-            <div class="row">
-                <div class="col-md-6">
-                    <form id="send-code" method="post">
-                        <div class="form-floating mb-3">
-                            <input asp-for="Input.Code" class="form-control" autocomplete="off" placeholder="Por favor ingrese el codigo." />
-                            <label asp-for="Input.Code" class="control-label form-label">Codigo de verificacion</label>
-                            <span asp-validation-for="Input.Code" class="text-danger"></span>
-                        </div>
-                        <button type="submit" class="w-100 btn btn-lg btn-primary">Verificar</button>
-                        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
-                    </form>
+        <li class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <div>
+                <p class="text-sm text-slate-600 mb-3">
+                    Escanee el codigo QR o ingrese esta clave en su aplicacion:
+                </p>
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-slate-50 border border-slate-200 mb-4">
+                    <code class="text-sm font-mono text-slate-700 font-semibold tracking-wider">@Model.SharedKey</code>
                 </div>
+                <div id="qrCode" class="mb-2"></div>
+            </div>
+        </li>
+        <li class="flex gap-4">
+            <span class="w-7 h-7 rounded-full bg-primary-100 text-primary-600 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <div class="w-full max-w-sm">
+                <p class="text-sm text-slate-600 mb-3">
+                    Ingrese el codigo de verificacion que su aplicacion le proporcionara:
+                </p>
+                <form id="send-code" method="post">
+                    <div class="mb-4">
+                        <input asp-for="Input.Code"
+                               class="w-full px-4 py-3 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition text-center text-lg tracking-[0.3em] font-mono"
+                               autocomplete="off" placeholder="000000" />
+                        <span asp-validation-for="Input.Code" class="text-rose-500 text-xs mt-1 block"></span>
+                    </div>
+                    <button type="submit"
+                            class="w-full py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                        Verificar
+                    </button>
+                    <div asp-validation-summary="ModelOnly" class="bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-xl px-4 py-3 mt-4" role="alert"></div>
+                </form>
             </div>
         </li>
     </ol>
 </div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script>
     new QRCode(document.getElementById("qrCode"), {
         text: "@Html.Raw(Model.AuthenticatorUri)",
-        width: 180,
-        height: 180
+        width: 160,
+        height: 160
     });
 </script>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }

@@ -1,0 +1,95 @@
+@model IEnumerable<TechRent.Models.OrdenAlquiler>
+
+@{
+    ViewData["Title"] = "Historial de Compras";
+}
+
+<div class="fade-in">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="bi bi-clock-history text-primary-500"></i> Historial de Compras
+            </h1>
+            <p class="text-sm text-slate-400">Tus ordenes y pagos anteriores</p>
+        </div>
+        <a asp-controller="Carrito" asp-action="Index"
+           class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:border-primary-300 hover:text-primary-600 transition">
+            <i class="bi bi-cart3"></i> Ir al Carrito
+        </a>
+    </div>
+
+    @if (!Model.Any())
+    {
+        <div class="bg-white rounded-2xl border border-slate-100 p-12 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 flex items-center justify-center mx-auto mb-4">
+                <i class="bi bi-receipt text-slate-300 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-semibold text-slate-600 mb-1">Sin compras aun</h3>
+            <p class="text-sm text-slate-400 mb-4">Cuando realices tu primera reserva, aparecera aqui.</p>
+            <a asp-controller="Equipos" asp-action="Index"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
+                <i class="bi bi-laptop"></i> Ver Equipos
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-4">
+            @foreach (var orden in Model)
+            {
+                var estadoColor = orden.Estado switch
+                {
+                    "Pagado" => "bg-emerald-50 text-emerald-600",
+                    "Pendiente" => "bg-amber-50 text-amber-600",
+                    "Cancelado" => "bg-rose-50 text-rose-600",
+                    _ => "bg-slate-50 text-slate-600"
+                };
+                var proveedor = orden.Transacciones.FirstOrDefault()?.Proveedor ?? "-";
+
+                <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+                    <div class="px-5 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-slate-50">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center">
+                                <i class="bi bi-receipt text-primary-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-bold text-slate-800">Orden #@orden.Id</p>
+                                <p class="text-xs text-slate-400">@orden.FechaCreacion.ToString("dd/MM/yyyy HH:mm")</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium @estadoColor">@orden.Estado</span>
+                            <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-50 text-slate-600">@proveedor</span>
+                            <span class="text-lg font-bold text-emerald-600">$@orden.Total.ToString("0.00")</span>
+                        </div>
+                    </div>
+                    <div class="px-5 py-3">
+                        <table class="w-full text-xs">
+                            <thead>
+                                <tr class="text-slate-400">
+                                    <th class="text-left py-1 font-medium">Equipo</th>
+                                    <th class="text-center py-1 font-medium">Cant.</th>
+                                    <th class="text-center py-1 font-medium">Dias</th>
+                                    <th class="text-right py-1 font-medium">P. Dia</th>
+                                    <th class="text-right py-1 font-medium">Subtotal</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in orden.Detalles)
+                                {
+                                    <tr class="border-t border-slate-50">
+                                        <td class="py-1.5 text-slate-700 font-medium">@d.NombreEquipo</td>
+                                        <td class="py-1.5 text-center text-slate-600">@d.Cantidad</td>
+                                        <td class="py-1.5 text-center text-slate-600">@d.Dias</td>
+                                        <td class="py-1.5 text-right text-slate-600">$@d.PrecioPorDia.ToString("0.00")</td>
+                                        <td class="py-1.5 text-right text-emerald-600 font-semibold">$@d.Subtotal.ToString("0.00")</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

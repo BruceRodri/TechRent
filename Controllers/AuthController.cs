@@ -39,13 +39,17 @@ namespace TechRent.Controllers
                 return RedirectToPage("/Account/Login", new { area = "Identity" });
             }
 
-            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: true);
+            var result = await _signInManager.ExternalLoginSignInAsync(info.LoginProvider, info.ProviderKey, isPersistent: true, bypassTwoFactor: false);
 
             if (result.Succeeded)
             {
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
+            }
+            if (result.RequiresTwoFactor)
+            {
+                return RedirectToPage("/Account/LoginWith2fa", new { area = "Identity", ReturnUrl = returnUrl, RememberMe = true });
             }
 
             var email = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
@@ -64,7 +68,7 @@ namespace TechRent.Controllers
                 {
                     UserName = email,
                     Email = email,
-                    EmailConfirmed = true
+                    EmailConfirmed = false
                 };
 
                 var createResult = await _userManager.CreateAsync(user);
@@ -73,6 +77,11 @@ namespace TechRent.Controllers
                     TempData["Error"] = "Error al crear la cuenta: " + string.Join(", ", createResult.Errors.Select(e => e.Description));
                     return RedirectToPage("/Account/Login", new { area = "Identity" });
                 }
+
+                var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+                code = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(
+                    Microsoft.AspNetCore.WebUtilities.WebEncoders.Base64UrlEncode(System.Text.Encoding.UTF8.GetBytes(code))));
+                var callbackUrl = Url.Action("ConfirmEmail", "Account", new { area = "Identity", userId = user.Id, code }, protocol: Request.Scheme);
             }
 
             await _userManager.AddLoginAsync(user, info);

@@ -1,133 +1,163 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - TechRent</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/TechRent.styles.css" asp-append-version="true" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 200: '#c7d2fe', 300: '#a5b4fc', 400: '#818cf8', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' },
+                        surface: '#f1f5f9',
+                        dark: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+        .fade-in { animation: fadeIn 0.3s ease-in; }
+        &#64;keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
 </head>
 
-<body>
+<body class="bg-surface min-h-screen flex flex-col">
+    @Html.AntiForgeryToken()
+
     <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">TechRent</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse"
-                        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Categorias"
-                               asp-action="Index">Categorías</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Marcas"
-                               asp-action="Index">Marcas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Equipos"
-                               asp-action="Index">Equipos</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Clientes"
-                               asp-action="Index">Clientes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Reservas"
-                               asp-action="Index">Reservas</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Reportes"
-                               asp-action="Index">Reportes</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Ia" asp-action="Index">
-                                <i class="bi bi-robot"></i> Asistente IA
-                            </a>
-                        </li>
-                    </ul>
-                    <ul class="navbar-nav">
+        <nav class="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex items-center justify-between h-14">
+
+                    <a asp-area="" asp-controller="Home" asp-action="Index"
+                       class="flex items-center gap-2 text-primary-600 font-bold text-lg tracking-tight">
+                        <i class="bi bi-cpu"></i> TechRent
+                    </a>
+
+                    <div class="hidden md:flex items-center gap-1">
+                        <a asp-controller="Home" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Home</a>
+                        <a asp-controller="Categorias" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Categorias</a>
+                        <a asp-controller="Marcas" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Marcas</a>
+                        <a asp-controller="Equipos" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Equipos</a>
+                        <a asp-controller="Clientes" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Clientes</a>
+                        <a asp-controller="Reservas" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Reservas</a>
+                        <a asp-controller="Reportes" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-primary-600 hover:bg-primary-50 transition">Reportes</a>
+                        <a asp-controller="Ia" asp-action="Index"
+                           class="px-3 py-2 rounded-lg text-sm font-medium text-primary-600 bg-primary-50 hover:bg-primary-100 transition">
+                            <i class="bi bi-robot"></i> IA
+                        </a>
+                    </div>
+
+                    <div class="flex items-center gap-2">
                         @if (User.Identity?.IsAuthenticated == true)
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark position-relative" asp-controller="Carrito" asp-action="Index">
-                                    <i class="bi bi-cart3"></i> Carrito
-                                    <span id="cart-count"
-                                          class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
-                                          style="display:none;">
-                                        0
-                                    </span>
-                                </a>
-                            </li>
-                            <li class="nav-item dropdown">
-                                <a class="nav-link dropdown-toggle text-success" href="#" id="userDropdown" role="button"
-                                   data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="bi bi-person-circle"></i> @User.Identity!.Name
-                                </a>
-                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                                    <li>
-                                        <a class="dropdown-item" asp-area="Identity" asp-page="/Account/Manage/Index">
-                                            <i class="bi bi-gear"></i> Gestionar Cuenta
-                                        </a>
-                                    </li>
-                                    <li>
-                                        <hr class="dropdown-divider" />
-                                    </li>
-                                    <li>
-                                        <form asp-area="Identity" asp-page="/Account/Logout"
-                                              asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
-                                            <button type="submit" class="dropdown-item text-danger">
-                                                <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </li>
+                            <a asp-controller="Carrito" asp-action="Index"
+                               class="relative p-2 rounded-lg text-slate-500 hover:text-primary-600 hover:bg-primary-50 transition">
+                                <i class="bi bi-cart3 text-lg"></i>
+                                <span id="cart-count"
+                                      class="absolute -top-1 -right-1 bg-rose-500 text-white text-[10px] font-bold rounded-full h-4 min-w-[16px] flex items-center justify-center px-1"
+                                      style="display:none;">0</span>
+                            </a>
+                            <a asp-controller="Carrito" asp-action="Historial"
+                               class="p-2 rounded-lg text-slate-500 hover:text-primary-600 hover:bg-primary-50 transition" title="Historial de compras">
+                                <i class="bi bi-clock-history text-lg"></i>
+                            </a>
+
+                            <div class="relative" id="userMenu">
+                                <button onclick="document.getElementById('userDropdown').classList.toggle('hidden')"
+                                    class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium text-primary-600 hover:bg-primary-50 transition">
+                                    <i class="bi bi-person-circle"></i>
+                                    <span class="hidden sm:inline">@User.Identity!.Name</span>
+                                    <i class="bi bi-chevron-down text-xs"></i>
+                                </button>
+                                <div id="userDropdown" class="hidden absolute right-0 mt-1 w-52 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+                                    <a asp-area="Identity" asp-page="/Account/Manage/Index"
+                                       class="flex items-center gap-2 px-4 py-2.5 text-sm text-slate-600 hover:bg-slate-50 transition">
+                                        <i class="bi bi-gear"></i> Gestionar Cuenta
+                                    </a>
+                                    <hr class="border-slate-100 my-1">
+                                    <form asp-area="Identity" asp-page="/Account/Logout"
+                                          asp-route-returnUrl="@Url.Action("Index", "Home")" method="post">
+                                        <button type="submit"
+                                            class="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-rose-600 hover:bg-rose-50 transition">
+                                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesion
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
                         }
                         else
                         {
-                            <li class="nav-item">
-                                <a class="nav-link text-dark" asp-area="Identity" asp-page="/Account/Login">
-                                    <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesion
-                                </a>
-                            </li>
+                            <a asp-area="Identity" asp-page="/Account/Login"
+                               class="px-4 py-2 rounded-lg text-sm font-medium bg-primary-500 text-white hover:bg-primary-600 transition shadow-sm">
+                                <i class="bi bi-box-arrow-in-right"></i> Iniciar Sesion
+                            </a>
                         }
-                    </ul>
+                    </div>
+
+                    <button onclick="document.getElementById('mobileMenu').classList.toggle('hidden')"
+                            class="md:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100">
+                        <i class="bi bi-list text-xl"></i>
+                    </button>
                 </div>
+            </div>
+
+            <div id="mobileMenu" class="hidden md:hidden border-t border-slate-100 bg-white px-4 pb-3">
+                <a asp-controller="Home" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Home</a>
+                <a asp-controller="Categorias" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Categorias</a>
+                <a asp-controller="Marcas" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Marcas</a>
+                <a asp-controller="Equipos" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Equipos</a>
+                <a asp-controller="Clientes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Clientes</a>
+                <a asp-controller="Reservas" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Reservas</a>
+                <a asp-controller="Reportes" asp-action="Index" class="block py-2 text-sm text-slate-600 hover:text-primary-600">Reportes</a>
+                <a asp-controller="Ia" asp-action="Index" class="block py-2 text-sm font-medium text-primary-600">Asistente IA</a>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - TechRent - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <main class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        @RenderBody()
+    </main>
+
+    <footer class="bg-white border-t border-slate-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <p class="text-center text-sm text-slate-400">
+                &copy; 2026 TechRent
+            </p>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     <script>
         $(document).ready(function () {
-        $.get('/Carrito/Contador', function (count) {
-        if (count > 0) {
-        $('#cart-count').text(count).show();
-        }
-        }).fail(function () { });
+            $.get('/Carrito/Contador', function (count) {
+                if (count > 0) {
+                    $('#cart-count').text(count).show();
+                }
+            }).fail(function () { });
+        });
+
+        document.addEventListener('click', function (e) {
+            var menu = document.getElementById('userMenu');
+            var btn = document.getElementById('userDropdown');
+            if (menu && !menu.contains(e.target)) {
+                btn.classList.add('hidden');
+            }
         });
     </script>
     @await RenderSectionAsync("Scripts", required: false)

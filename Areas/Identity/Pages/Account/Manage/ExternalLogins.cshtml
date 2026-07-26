@@ -1,0 +1,52 @@
+@page
+@model ExternalLoginsModel
+@{
+    ViewData["Title"] = "Inicios de sesion externos";
+    ViewData["ActivePage"] = ManageNavPages.ExternalLogins;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Administra las cuentas externas vinculadas</p>
+
+    <partial name="_StatusMessage" for="StatusMessage" />
+
+    @if (Model.CurrentLogins?.Count > 0)
+    {
+        <h4 class="text-sm font-semibold text-slate-700 mb-3">Cuentas vinculadas</h4>
+        <div class="space-y-3 mb-6">
+            @foreach (var login in Model.CurrentLogins)
+            {
+                <div class="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100">
+                    <div class="flex items-center gap-2">
+                        <i class="bi bi-box-arrow-up-right text-slate-400"></i>
+                        <span class="text-sm font-medium text-slate-700">@login.ProviderDisplayName</span>
+                    </div>
+                    @if (Model.ShowRemoveButton)
+                    {
+                        <form asp-page-handler="RemoveLogin" method="post">
+                            <input asp-for="@login.LoginProvider" name="LoginProvider" type="hidden" />
+                            <input asp-for="@login.ProviderKey" name="ProviderKey" type="hidden" />
+                            <button type="submit" class="text-xs font-medium text-rose-500 hover:text-rose-600 transition" title="Eliminar esta cuenta externa">Remover</button>
+                        </form>
+                    }
+                </div>
+            }
+        </div>
+    }
+
+    @if (Model.OtherLogins?.Count > 0)
+    {
+        <h4 class="text-sm font-semibold text-slate-700 mb-3">Agregar otro servicio</h4>
+        <form id="link-login-form" asp-page-handler="LinkLogin" method="post">
+            <div class="flex flex-wrap gap-3">
+                @foreach (var provider in Model.OtherLogins)
+                {
+                    <button id="@($"link-login-button-{provider.Name}")" type="submit" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition" name="provider" value="@provider.Name" title="Iniciar sesion con @provider.DisplayName">
+                        @provider.DisplayName
+                    </button>
+                }
+            </div>
+        </form>
+    }
+</div>

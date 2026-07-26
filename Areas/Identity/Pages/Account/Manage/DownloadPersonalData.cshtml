@@ -1,0 +1,22 @@
+@page
+@model DownloadPersonalDataModel
+@{
+    ViewData["Title"] = "Descargar datos personales";
+    ViewData["ActivePage"] = ManageNavPages.PersonalData;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Descarga una copia de todos tus datos personales</p>
+
+    <div class="max-w-md">
+        <p class="text-sm text-slate-600 mb-6">Haz clic en el boton para descargar tus datos personales en formato JSON.</p>
+
+        <form id="download-data" asp-page="DownloadPersonalData" method="post">
+            <button type="submit"
+                    class="px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                <i class="bi bi-download mr-1"></i> Descargar
+            </button>
+        </form>
+    </div>
+</div>

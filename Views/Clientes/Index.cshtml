@@ -4,107 +4,74 @@
     ViewData["Title"] = "Clientes";
 }
 
-<div class="container mt-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="fade-in">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1>
-                <i class="bi bi-people-fill" style="color: #4361ee;"></i> 
-                Nuestros Clientes
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="bi bi-people-fill text-primary-500"></i> Clientes
             </h1>
-            <p class="text-muted">Gestión de clientes que alquilan equipos tecnológicos</p>
+            <p class="text-sm text-slate-400">Gestion de clientes que alquilan equipos</p>
         </div>
-        <a asp-action="Create" class="btn btn-primary btn-lg">
+        <a asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
             <i class="bi bi-person-plus-fill"></i> Nuevo Cliente
         </a>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-people-fill" style="color: #4361ee;"></i>
-                <div class="number">@ViewBag.TotalRegistros</div>
-                <div class="text-muted">Clientes Registrados</div>
-            </div>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-people-fill text-primary-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.TotalRegistros</h3>
+            <p class="text-xs text-slate-500">Registrados</p>
         </div>
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-envelope-fill" style="color: #06d6a0;"></i>
-                <div class="number">@ViewBag.ClientesConEmail</div>
-                <div class="text-muted">Correos Registrados</div>
-            </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-envelope-fill text-emerald-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.ClientesConEmail</h3>
+            <p class="text-xs text-slate-500">Con Email</p>
         </div>
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-telephone-fill" style="color: #f72585;"></i>
-                <div class="number">@ViewBag.ClientesConTelefono</div>
-                <div class="text-muted">Teléfonos Registrados</div>
-            </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-telephone-fill text-rose-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.ClientesConTelefono</h3>
+            <p class="text-xs text-slate-500">Con Telefono</p>
         </div>
     </div>
 
-    <form method="get" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="searchString" class="form-control" placeholder="Buscar por nombre, email o teléfono..." value="@ViewBag.SearchString" />
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
-        </div>
+    <form method="get" class="flex gap-2 mb-6">
+        <input type="text" name="searchString" value="@ViewBag.SearchString" class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" placeholder="Buscar por nombre, email o telefono..." />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition"><i class="bi bi-search"></i> Buscar</button>
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition"><i class="bi bi-x-circle"></i> Limpiar</a>
     </form>
 
-    <div class="row">
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (var item in Model)
         {
-            <div class="col-md-6 col-lg-4 mb-4">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <div>
-                                <h5 class="card-title">
-                                    <i class="bi bi-person-circle" style="color: #4361ee;"></i>
-                                    @item.NombreCompleto
-                                </h5>
-                                <h6 class="card-subtitle mb-2 text-muted">
-                                    <i class="bi bi-person-badge"></i> ID: @item.DocumentoIdentidad
-                                </h6>
-                            </div>
-                            <span class="badge bg-success rounded-pill">Activo</span>
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 hover:border-primary-200 transition flex flex-col">
+                <div class="flex items-start justify-between mb-3">
+                    <div class="flex items-center gap-2">
+                        <div class="w-9 h-9 rounded-xl bg-primary-100 flex items-center justify-center">
+                            <i class="bi bi-person-circle text-primary-500"></i>
                         </div>
-                        
-                        <hr />
-                        
-                        <div class="mb-2">
-                            <i class="bi bi-envelope-fill text-primary"></i>
-                            <small>@item.Email</small>
-                        </div>
-                        <div class="mb-2">
-                            <i class="bi bi-telephone-fill text-success"></i>
-                            <small>@item.Telefono</small>
-                        </div>
-                        <div class="mb-3">
-                            <i class="bi bi-geo-alt-fill text-danger"></i>
-                            <small>@(item.Direccion ?? "Sin dirección registrada")</small>
-                        </div>
-                        
-                        <div class="d-flex justify-content-end gap-2">
-                            <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
-                                <i class="bi bi-pencil"></i> Editar
-                            </a>
-                            <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
-                                <i class="bi bi-eye"></i> Ver
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
-                                <i class="bi bi-trash"></i>
-                            </a>
+                        <div>
+                            <h3 class="text-sm font-semibold text-slate-800">@item.NombreCompleto</h3>
+                            <p class="text-xs text-slate-400">ID: @item.DocumentoIdentidad</p>
                         </div>
                     </div>
-                    <div class="card-footer text-muted">
-                        <small>
-                            <i class="bi bi-calendar"></i> Registrado: @item.FechaCreacion.ToString("dd/MM/yyyy")
-                        </small>
+                    <span class="px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">Activo</span>
+                </div>
+                <div class="space-y-1.5 mb-4 flex-1">
+                    <div class="flex items-center gap-2 text-xs text-slate-500"><i class="bi bi-envelope text-primary-400"></i> @item.Email</div>
+                    <div class="flex items-center gap-2 text-xs text-slate-500"><i class="bi bi-telephone text-emerald-400"></i> @item.Telefono</div>
+                    <div class="flex items-center gap-2 text-xs text-slate-500"><i class="bi bi-geo-alt text-rose-400"></i> @(item.Direccion ?? "Sin direccion")</div>
+                </div>
+                <div class="flex items-center justify-between pt-3 border-t border-slate-100">
+                    <span class="text-[10px] text-slate-400"><i class="bi bi-calendar"></i> @item.FechaCreacion.ToString("dd/MM/yyyy")</span>
+                    <div class="flex items-center gap-1">
+                        <a asp-action="Edit" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-primary-500 hover:bg-primary-50 transition"><i class="bi bi-pencil text-sm"></i></a>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition"><i class="bi bi-eye text-sm"></i></a>
+                        <a asp-action="Delete" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 transition"><i class="bi bi-trash text-sm"></i></a>
                     </div>
                 </div>
             </div>
         }
     </div>
-
     @await Html.PartialAsync("_Pagination")
 </div>

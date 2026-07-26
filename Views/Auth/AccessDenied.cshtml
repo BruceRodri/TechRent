@@ -2,20 +2,20 @@
     ViewData["Title"] = "Acceso Denegado";
 }
 
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-5">
-            <div class="card shadow-lg">
-                <div class="card-header text-center bg-danger text-white py-3">
-                    <h4 class="mb-0"><i class="bi bi-shield-lock"></i> Acceso Denegado</h4>
-                </div>
-                <div class="card-body p-4 text-center">
-                    <p class="mb-3">No tienes permisos para acceder a esta página.</p>
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
-                        <i class="bi bi-house"></i> Volver al Inicio
-                    </a>
-                </div>
+<div class="max-w-md mx-auto mt-12 fade-in">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden text-center">
+        <div class="bg-rose-500 px-6 py-5">
+            <div class="w-14 h-14 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-3">
+                <i class="bi bi-shield-lock text-white text-xl"></i>
             </div>
+            <h4 class="text-white font-semibold">Acceso Denegado</h4>
+        </div>
+        <div class="p-6">
+            <p class="text-sm text-slate-500 mb-5">No tienes permisos para acceder a esta pagina.</p>
+            <a asp-controller="Home" asp-action="Index"
+               class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
+                <i class="bi bi-house"></i> Volver al Inicio
+            </a>
         </div>
     </div>
 </div>

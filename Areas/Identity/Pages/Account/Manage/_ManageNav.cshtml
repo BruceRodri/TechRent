@@ -2,14 +2,39 @@
 @{
     var hasExternalLogins = (await SignInManager.GetExternalAuthenticationSchemesAsync()).Any();
 }
-<ul class="nav nav-pills flex-column">
-    <li class="nav-item"><a class="nav-link @ManageNavPages.IndexNavClass(ViewContext)" id="profile" asp-page="./Index">Perfil</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.EmailNavClass(ViewContext)" id="email" asp-page="./Email">Correo electronico</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.ChangePasswordNavClass(ViewContext)" id="change-password" asp-page="./ChangePassword">Contrasena</a></li>
+
+<nav class="space-y-1">
+    <a asp-page="./Index"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+              @(ManageNavPages.IndexNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+        <i class="bi bi-person text-sm"></i> Perfil
+    </a>
+    <a asp-page="./Email"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+              @(ManageNavPages.EmailNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+        <i class="bi bi-envelope text-sm"></i> Correo electronico
+    </a>
+    <a asp-page="./ChangePassword"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+              @(ManageNavPages.ChangePasswordNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+        <i class="bi bi-key text-sm"></i> Contrasena
+    </a>
     @if (hasExternalLogins)
     {
-        <li id="external-logins" class="nav-item"><a id="external-login" class="nav-link @ManageNavPages.ExternalLoginsNavClass(ViewContext)" asp-page="./ExternalLogins">Inicios de sesion externos</a></li>
+        <a asp-page="./ExternalLogins"
+           class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+                  @(ManageNavPages.ExternalLoginsNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+            <i class="bi bi-box-arrow-up-right text-sm"></i> Inicios de sesion externos
+        </a>
     }
-    <li class="nav-item"><a class="nav-link @ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext)" id="two-factor" asp-page="./TwoFactorAuthentication">Autenticacion de dos factores</a></li>
-    <li class="nav-item"><a class="nav-link @ManageNavPages.PersonalDataNavClass(ViewContext)" id="personal-data" asp-page="./PersonalData">Datos personales</a></li>
-</ul>
+    <a asp-page="./TwoFactorAuthentication"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+              @(ManageNavPages.TwoFactorAuthenticationNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+        <i class="bi bi-shield-lock text-sm"></i> Autenticacion de dos factores
+    </a>
+    <a asp-page="./PersonalData"
+       class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition
+              @(ManageNavPages.PersonalDataNavClass(ViewContext) == "active" ? "bg-primary-50 text-primary-600" : "text-slate-500 hover:bg-slate-50 hover:text-slate-700")">
+        <i class="bi bi-database text-sm"></i> Datos personales
+    </a>
+</nav>

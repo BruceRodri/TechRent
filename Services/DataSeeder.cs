@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Npgsql;
-using NpgsqlTypes;
 using TechRent.Data;
 using TechRent.Models;
 
@@ -37,7 +35,7 @@ namespace TechRent.Services
                 await _context.SaveChangesAsync();
             }
 
-            // 2. Marcas (20)
+            // 2. Marcas (40)
             if (!_context.Marcas.Any())
             {
                 var marcas = new[]
@@ -61,7 +59,27 @@ namespace TechRent.Services
                     new Marca { Nombre = "Seagate", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
                     new Marca { Nombre = "Kingston", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
                     new Marca { Nombre = "Nvidia", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
-                    new Marca { Nombre = "Intel", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow }
+                    new Marca { Nombre = "Intel", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "AMD", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "TP-Link", PaisOrigen = "China", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Netgear", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "BenQ", PaisOrigen = "Taiwán", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Razer", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Corsair", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Crucial", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "SanDisk", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "JBL", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Bose", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Sennheiser", PaisOrigen = "Alemania", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Poly", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Ubiquiti", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Fortinet", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Zebra", PaisOrigen = "Estados Unidos", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Brother", PaisOrigen = "Japón", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Wacom", PaisOrigen = "Japón", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Elgato", PaisOrigen = "Alemania", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Anker", PaisOrigen = "China", Activo = true, FechaCreacion = DateTime.UtcNow },
+                    new Marca { Nombre = "Synology", PaisOrigen = "Taiwán", Activo = true, FechaCreacion = DateTime.UtcNow }
                 };
                 await _context.Marcas.AddRangeAsync(marcas);
                 await _context.SaveChangesAsync();
@@ -81,7 +99,7 @@ namespace TechRent.Services
                 await _context.SaveChangesAsync();
             }
 
-            // 4. Equipos (30,000)
+            // 4. Equipos (50,000)
             if (!_context.Equipos.Any())
             {
                 var categorias = await _context.Categorias.ToListAsync();
@@ -118,7 +136,7 @@ namespace TechRent.Services
                     "Equipo multifuncional con amplia compatibilidad de software"
                 };
 
-                for (int i = 1; i <= 30000; i++)
+                for (int i = 1; i <= 50000; i++)
                 {
                     var tipo = tiposEquipo[random.Next(tiposEquipo.Length)];
                     var descripcion = descripciones[random.Next(descripciones.Length)];
@@ -139,7 +157,7 @@ namespace TechRent.Services
                         FechaCreacion = DateTime.UtcNow
                     });
 
-                    if (i % 5000 == 0)
+                    if (i % 10000 == 0)
                     {
                         await _context.Equipos.AddRangeAsync(equipos);
                         await _context.SaveChangesAsync();
@@ -155,7 +173,7 @@ namespace TechRent.Services
                 }
             }
 
-            // 5. Clientes (80,000)
+            // 5. Clientes (100,000)
             if (!_context.Clientes.Any())
             {
                 var clientes = new List<Cliente>();
@@ -176,11 +194,11 @@ namespace TechRent.Services
                     "Castillo", "Paredes", "Cordova", "Leon", "Valdez", "Espinoza", "Sandoval", "Pacheco", "Solis", "Melendez"
                 };
 
-                for (int i = 1; i <= 80000; i++)
+                for (int i = 1; i <= 100000; i++)
                 {
                     var idxNombre = (i - 1) % nombres.Length;
                     var idxApellido1 = ((i - 1) / nombres.Length) % apellidos.Length;
-                    var idxApellido2 = (i - 1) / (nombres.Length * apellidos.Length);
+                    var idxApellido2 = ((i - 1) / (nombres.Length * apellidos.Length)) % apellidos.Length;
                     var nombreCompleto = $"{nombres[idxNombre]} {apellidos[idxApellido1]} {apellidos[idxApellido2]}";
 
                     clientes.Add(new Cliente
@@ -257,7 +275,7 @@ namespace TechRent.Services
                 var reservas = await _context.Reservas.ToListAsync();
                 var equiposList = await _context.Equipos.ToListAsync();
                 var random = new Random();
-                var totalRequerido = 239966;
+                var totalRequerido = 700000;
 
                 var detalles = new List<DetalleReserva>(totalRequerido);
                 for (int i = 1; i <= totalRequerido; i++)
@@ -278,30 +296,14 @@ namespace TechRent.Services
                     });
                 }
 
-                var connString = _context.Database.GetConnectionString();
-                await using var conn = new NpgsqlConnection(connString);
-                await conn.OpenAsync();
-
-                await using var writer = await conn.BeginBinaryImportAsync(
-                    """
-                    COPY "DetalleReservas" ("Cantidad", "PrecioUnitarioPorDia", "CantidadDias", "Subtotal", "ReservaId", "EquipoId", "FechaCreacion")
-                    FROM STDIN (FORMAT BINARY)
-                    """);
-
-                foreach (var d in detalles)
+                var batchSize = 10000;
+                for (int i = 0; i < detalles.Count; i += batchSize)
                 {
-                    await writer.StartRowAsync();
-                    await writer.WriteAsync(d.Cantidad);
-                    await writer.WriteAsync(d.PrecioUnitarioPorDia);
-                    await writer.WriteAsync(d.CantidadDias);
-                    await writer.WriteAsync(d.Subtotal);
-                    await writer.WriteAsync(d.ReservaId);
-                    await writer.WriteAsync(d.EquipoId);
-                    await writer.WriteAsync(d.FechaCreacion, NpgsqlDbType.TimestampTz);
+                    var batch = detalles.Skip(i).Take(batchSize).ToList();
+                    await _context.DetalleReservas.AddRangeAsync(batch);
+                    await _context.SaveChangesAsync();
+                    Console.WriteLine($"DetalleReservas: {Math.Min(i + batchSize, detalles.Count)} / {detalles.Count} insertados");
                 }
-                await writer.CompleteAsync();
-
-                Console.WriteLine($"DetalleReservas: {detalles.Count} insertados vía COPY");
 
                 await _context.Database.ExecuteSqlRawAsync("""
                     UPDATE "Equipos" e

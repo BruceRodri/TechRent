@@ -128,6 +128,7 @@ namespace TechRent.Controllers
                 transaccion.OrdenAlquiler.Estado = "Pagado";
                 transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
                 await DescontarStockAsync(transaccion.OrdenAlquiler);
+                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
                 await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
             }
             else
@@ -186,6 +187,7 @@ namespace TechRent.Controllers
                 transaccion.OrdenAlquiler.Estado = "Pagado";
                 transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
                 await DescontarStockAsync(transaccion.OrdenAlquiler);
+                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
                 await _context.SaveChangesAsync();
             }
 
@@ -264,6 +266,7 @@ namespace TechRent.Controllers
                 transaccion.OrdenAlquiler.Estado = "Pagado";
                 transaccion.OrdenAlquiler.FechaPago = DateTime.UtcNow;
                 await DescontarStockAsync(transaccion.OrdenAlquiler);
+                await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
                 await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
             }
             else
@@ -287,6 +290,18 @@ namespace TechRent.Controllers
                 var equipo = await _context.Equipos.FindAsync(detalle.EquipoId);
                 if (equipo != null)
                     equipo.Stock = Math.Max(0, equipo.Stock - detalle.Cantidad);
+            }
+        }
+
+        private async Task VaciarCarritoAsync(string email)
+        {
+            var items = await _context.CarritoItems
+                .Where(c => c.UsuarioEmail == email)
+                .ToListAsync();
+
+            if (items.Any())
+            {
+                _context.CarritoItems.RemoveRange(items);
             }
         }
 

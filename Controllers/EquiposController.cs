@@ -229,6 +229,7 @@ namespace TechRent.Controllers
         private bool EquipoExists(int id) => _context.Equipos.Any(e => e.Id == id);
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCount()
         {
             var count = await _context.Equipos.CountAsync();

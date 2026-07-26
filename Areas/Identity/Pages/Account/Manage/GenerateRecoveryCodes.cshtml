@@ -1,0 +1,22 @@
+@page
+@model GenerateRecoveryCodesModel
+@{
+    ViewData["Title"] = "Generar codigos de recuperacion";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Genera un nuevo conjunto de codigos de recuperacion para tu cuenta</p>
+
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-xl px-4 py-3 mb-6">
+        <strong>Generar codigos invalidara los anteriores.</strong> Los codigos de recuperacion son de un solo uso.
+    </div>
+
+    <form id="generate-recovery-codes" method="post" class="inline">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+            <i class="bi bi-key mr-1"></i> Generar codigos
+        </button>
+    </form>
+</div>

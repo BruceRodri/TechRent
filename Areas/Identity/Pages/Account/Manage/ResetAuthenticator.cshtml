@@ -1,0 +1,22 @@
+@page
+@model ResetAuthenticatorModel
+@{
+    ViewData["Title"] = "Restablecer autenticador";
+    ViewData["ActivePage"] = ManageNavPages.TwoFactorAuthentication;
+}
+
+<div class="bg-white rounded-2xl border border-slate-100 p-6">
+    <h3 class="text-lg font-bold text-slate-800 mb-1">@ViewData["Title"]</h3>
+    <p class="text-sm text-slate-400 mb-6">Restablece la clave de tu aplicacion de autenticacion</p>
+
+    <div class="bg-amber-50 border border-amber-200 text-amber-700 text-sm rounded-xl px-4 py-3 mb-6">
+        <strong>Advertencia:</strong> Si restableces tu autenticador, no podras usarlo hasta completar la configuracion de nuevo.
+    </div>
+
+    <form id="reset-authenticator-form" method="post" class="inline">
+        <button type="submit"
+                class="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-semibold hover:bg-rose-600 transition shadow-sm">
+            <i class="bi bi-arrow-counterclockwise mr-1"></i> Restablecer autenticador
+        </button>
+    </form>
+</div>

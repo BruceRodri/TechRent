@@ -4,76 +4,129 @@
     ViewData["Title"] = "Editar Reserva";
 }
 
-<div class="container mt-4">
-    <h1><i class="bi bi-pencil"></i> Editar Reserva</h1>
-    <hr />
-    <div class="row">
-        <div class="col-md-8">
-            <form asp-action="Edit" id="reservaForm">
-                <div asp-validation-summary="All" class="text-danger"></div>
-                <input type="hidden" asp-for="Id" />
+<div class="fade-in">
+    <div class="max-w-6xl mx-auto">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+            <div class="px-6 py-4 bg-gradient-to-r from-primary-500 to-primary-600">
+                <h1 class="text-xl font-bold text-white">Editar Reserva</h1>
+                <p class="text-primary-100 text-sm mt-1">Modifique los datos de la reserva</p>
+            </div>
+            <div class="p-6">
+                <form asp-action="Edit" id="reservaForm">
+                    <div asp-validation-summary="All" class="bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-xl px-4 py-3 mb-4"></div>
+                    <input type="hidden" asp-for="Id" />
 
-                <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="bi bi-person"></i> Cliente</label>
-                    <input type="text" id="clienteSearch" class="form-control" placeholder="Escriba el nombre del cliente..." autocomplete="off"
-                           value="@(Model.Cliente?.NombreCompleto ?? "")" />
-                    <input type="hidden" asp-for="ClienteId" id="ClienteId" />
-                    <div id="clienteResults" class="list-group" style="position:absolute;z-index:1000;width:100%;display:none;max-height:250px;overflow-y:auto;"></div>
-                    <small id="clienteSelected" class="text-success fw-bold">
-                        @if (Model.Cliente != null)
-                        {
-                            <text>Cliente seleccionado: @Model.Cliente.NombreCompleto</text>
-                        }
-                    </small>
-                    <span asp-validation-for="ClienteId" class="text-danger"></span>
-                </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
 
-                <div class="mb-3">
-                    <label asp-for="EstadoReservaId" class="form-label fw-bold"><i class="bi bi-flag"></i> Estado</label>
-                    <select asp-for="EstadoReservaId" class="form-control" asp-items="ViewBag.EstadoReservaId"></select>
-                </div>
+                        @* Columna izquierda: Formulario *@
+                        <div class="lg:col-span-3 space-y-5">
 
-                <div class="row mb-3">
-                    <div class="col-md-5">
-                        <label asp-for="FechaInicio" class="form-label fw-bold"><i class="bi bi-calendar"></i> Fecha Inicio</label>
-                        <input asp-for="FechaInicio" class="form-control" type="date" id="FechaInicio" />
-                        <span asp-validation-for="FechaInicio" class="text-danger"></span>
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Cliente</label>
+                                <input type="text" id="clienteSearch" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" placeholder="Escriba el nombre del cliente..." autocomplete="off"
+                                       value="@(Model.Cliente?.NombreCompleto ?? "")" />
+                                <input type="hidden" asp-for="ClienteId" id="ClienteId" />
+                                <div id="clienteResults" class="bg-white border border-slate-200 rounded-xl shadow-lg mt-1 hidden absolute z-50 w-full max-h-60 overflow-y-auto"></div>
+                                <small id="clienteSelected" class="text-emerald-600 text-sm font-semibold">
+                                    @if (Model.Cliente != null)
+                                    {
+                                        <text>Cliente seleccionado: @Model.Cliente.NombreCompleto</text>
+                                    }
+                                </small>
+                                <span asp-validation-for="ClienteId" class="text-rose-500 text-xs mt-1 block"></span>
+                            </div>
+
+                            <div>
+                                <label asp-for="EstadoReservaId" class="block text-sm font-medium text-slate-600 mb-1.5">Estado</label>
+                                <select asp-for="EstadoReservaId" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" asp-items="ViewBag.EstadoReservaId"></select>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Fechas de reserva</label>
+                                <div class="grid grid-cols-1 sm:grid-cols-11 gap-3 items-end">
+                                    <div class="sm:col-span-5">
+                                        <label class="text-xs text-slate-500 mb-1 block">Fecha Inicio</label>
+                                        <input asp-for="FechaInicio" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" type="date" id="FechaInicio" />
+                                        <span asp-validation-for="FechaInicio" class="text-rose-500 text-xs mt-1 block"></span>
+                                    </div>
+                                    <div class="sm:col-span-5">
+                                        <label class="text-xs text-slate-500 mb-1 block">Fecha Fin</label>
+                                        <input asp-for="FechaFin" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" type="date" id="FechaFin" />
+                                        <span asp-validation-for="FechaFin" class="text-rose-500 text-xs mt-1 block"></span>
+                                    </div>
+                                    <div class="sm:col-span-1 pb-1 text-center">
+                                        <span class="text-sm font-bold text-primary-600" id="diasCalculo">0 días</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Buscar equipos</label>
+                                <input type="text" id="equipoSearch" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" placeholder="Escriba el nombre del equipo..." />
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-slate-600 mb-1.5">Equipos disponibles</label>
+                                <div id="equiposContainer" class="max-h-72 overflow-y-auto border border-slate-200 rounded-xl p-2 space-y-1">
+                                    <div class="text-center text-slate-400 py-3 text-sm" id="equiposLoading">Cargando equipos...</div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label asp-for="Observaciones" class="block text-sm font-medium text-slate-600 mb-1.5">Observaciones</label>
+                                <textarea asp-for="Observaciones" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition" rows="2" placeholder="Notas adicionales sobre la reserva..."></textarea>
+                                <span asp-validation-for="Observaciones" class="text-rose-500 text-xs mt-1 block"></span>
+                            </div>
+                        </div>
+
+                        @* Columna derecha: Carrito *@
+                        <div class="lg:col-span-2">
+                            <div class="lg:sticky lg:top-6">
+                                <div class="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden">
+                                    <div class="px-5 py-3.5 bg-slate-800 flex items-center justify-between">
+                                        <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                                            <i class="bi bi-cart3"></i> Equipos seleccionados
+                                        </h2>
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-primary-500 text-white" id="cartCount">0</span>
+                                    </div>
+
+                                    <div id="cartItems" class="px-4 py-3 space-y-2 max-h-[400px] overflow-y-auto">
+                                        <div class="text-center text-slate-400 py-8 text-sm" id="cartEmpty">
+                                            <i class="bi bi-inbox text-3xl mb-2 block text-slate-300"></i>
+                                            No hay equipos seleccionados
+                                        </div>
+                                    </div>
+
+                                    <div class="border-t border-slate-200 px-5 py-4 space-y-3">
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-slate-500">Subtotal equipos</span>
+                                            <span class="font-medium text-slate-700" id="subtotalEquipos">$0.00</span>
+                                        </div>
+                                        <div class="flex justify-between text-sm">
+                                            <span class="text-slate-500">Días</span>
+                                            <span class="font-medium text-slate-700" id="totalDiasCart">0</span>
+                                        </div>
+                                        <div class="h-px bg-slate-200"></div>
+                                        <div class="flex justify-between">
+                                            <span class="text-sm font-semibold text-slate-600">Total</span>
+                                            <span class="text-xl font-bold text-emerald-600" id="montoTotal">$0.00</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="flex items-center justify-between mt-5">
+                                    <a asp-action="Index" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700 transition">
+                                        Cancelar
+                                    </a>
+                                    <button type="submit" class="px-5 py-2.5 rounded-xl bg-primary-500 text-white text-sm font-semibold hover:bg-primary-600 transition shadow-sm">
+                                        Guardar Cambios
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-md-5">
-                        <label asp-for="FechaFin" class="form-label fw-bold"><i class="bi bi-calendar"></i> Fecha Fin</label>
-                        <input asp-for="FechaFin" class="form-control" type="date" id="FechaFin" />
-                        <span asp-validation-for="FechaFin" class="text-danger"></span>
-                    </div>
-                    <div class="col-md-2 d-flex align-items-end">
-                        <div class="form-control-plaintext fw-bold" id="diasCalculo">0 días</div>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label class="form-label fw-bold"><i class="bi bi-box"></i> Equipos Disponibles</label>
-                    <input type="text" id="equipoSearch" class="form-control mb-2" placeholder="Buscar equipo por nombre..." />
-                    <div id="equiposContainer" style="max-height:350px;overflow-y:auto;border:1px solid #dee2e6;border-radius:0.25rem;padding:0.5rem;">
-                        <div class="text-center text-muted py-3" id="equiposLoading">Cargando equipos...</div>
-                    </div>
-                </div>
-
-                <div class="card bg-light mb-3">
-                    <div class="card-body text-end">
-                        <h4 class="mb-0">Total: <span id="montoTotal" class="text-success">$0.00</span></h4>
-                    </div>
-                </div>
-
-                <div class="mb-3">
-                    <label asp-for="Observaciones" class="form-label fw-bold"><i class="bi bi-chat"></i> Observaciones</label>
-                    <textarea asp-for="Observaciones" class="form-control" rows="2"></textarea>
-                    <span asp-validation-for="Observaciones" class="text-danger"></span>
-                </div>
-
-                <div class="mb-3">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg"></i> Guardar</button>
-                    <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-arrow-left"></i> Volver</a>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>
@@ -96,78 +149,140 @@
         let selectedEquipos = new Map();
         const detallesIniciales = @Html.Raw(detallesJson);
         detallesIniciales.forEach(function(d) {
-            selectedEquipos.set(d.equipoId, { nombre: d.nombre, precio: d.precioUnitarioPorDia, cantidad: d.cantidad });
+            selectedEquipos.set(d.equipoId, { nombre: d.nombre, precio: d.precioUnitarioPorDia, cantidad: d.cantidad, maxStock: d.cantidad });
         });
         let clienteTimeout;
         let equipoTimeout;
 
-        function calcularTotal() {
-            var fechaInicio = document.getElementById('FechaInicio').value;
-            var fechaFin = document.getElementById('FechaFin').value;
-            var totalDias = 0;
+        function calcularDias() {
+            var fi = document.getElementById('FechaInicio').value;
+            var ff = document.getElementById('FechaFin').value;
+            if (!fi || !ff) return 0;
+            var diff = Math.floor((new Date(ff) - new Date(fi)) / (1000 * 60 * 60 * 24));
+            return diff > 0 ? diff : 0;
+        }
 
-            if (fechaInicio && fechaFin) {
-                var fi = new Date(fechaInicio + 'T12:00:00');
-                var ff = new Date(fechaFin + 'T12:00:00');
-                var diff = Math.floor((ff - fi) / (1000 * 60 * 60 * 24));
-                if (diff > 0) totalDias = diff;
+        function calcularTotal() {
+            var totalDias = calcularDias();
+            document.getElementById('diasCalculo').textContent = totalDias + (totalDias === 1 ? ' día' : ' días');
+            document.getElementById('totalDiasCart').textContent = totalDias;
+
+            var subtotal = 0;
+            selectedEquipos.forEach(function(item) {
+                subtotal += item.cantidad * item.precio;
+            });
+            var total = subtotal * totalDias;
+
+            document.getElementById('subtotalEquipos').textContent = '$' + subtotal.toFixed(2) + '/día';
+            document.getElementById('montoTotal').textContent = '$' + total.toFixed(2);
+            document.getElementById('cartCount').textContent = selectedEquipos.size;
+        }
+
+        function renderCart() {
+            var container = document.getElementById('cartItems');
+            var totalDias = calcularDias();
+
+            if (selectedEquipos.size === 0) {
+                container.innerHTML = '<div class="text-center text-slate-400 py-8 text-sm"><i class="bi bi-inbox text-3xl mb-2 block text-slate-300"></i>No hay equipos seleccionados</div>';
+                calcularTotal();
+                return;
             }
 
-            document.getElementById('diasCalculo').textContent = totalDias + (totalDias === 1 ? ' día' : ' días');
-
-            var total = 0;
-            selectedEquipos.forEach(function(item) {
-                total += item.cantidad * item.precio * totalDias;
+            container.innerHTML = '';
+            selectedEquipos.forEach(function(item, id) {
+                var subtotalItem = item.cantidad * item.precio * totalDias;
+                var div = document.createElement('div');
+                div.className = 'bg-white rounded-xl px-3 py-2.5 border border-slate-100 shadow-sm';
+                div.innerHTML =
+                    '<div class="flex items-start justify-between gap-2">' +
+                        '<div class="flex-1 min-w-0">' +
+                            '<p class="text-sm font-semibold text-slate-700 truncate">' + item.nombre + '</p>' +
+                            '<p class="text-xs text-slate-400 mt-0.5">$' + item.precio.toFixed(2) + '/día × ' + item.cantidad + ' × ' + totalDias + ' días · Stock: ' + item.maxStock + '</p>' +
+                        '</div>' +
+                        '<p class="text-sm font-bold text-emerald-600 whitespace-nowrap">$' + subtotalItem.toFixed(2) + '</p>' +
+                    '</div>' +
+                    '<div class="flex items-center justify-between mt-2">' +
+                        '<div class="flex items-center gap-1">' +
+                            '<button type="button" onclick="changeQty(' + id + ', -1)" class="w-7 h-7 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center text-xs font-bold transition">−</button>' +
+                            '<span class="w-8 text-center text-sm font-semibold text-slate-700">' + item.cantidad + '</span>' +
+                            '<button type="button" onclick="changeQty(' + id + ', 1)" class="w-7 h-7 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 hover:text-slate-700 flex items-center justify-center text-xs font-bold transition">+</button>' +
+                        '</div>' +
+                        '<button type="button" onclick="removeEquipo(' + id + ')" class="text-xs font-medium text-rose-500 hover:text-rose-600 transition flex items-center gap-1">' +
+                            '<i class="bi bi-trash3 text-xs"></i> Quitar' +
+                        '</button>' +
+                    '</div>';
+                container.appendChild(div);
             });
+            calcularTotal();
+        }
 
-            document.getElementById('montoTotal').textContent = '$' + total.toFixed(2);
+        function changeQty(equipoId, delta) {
+            var item = selectedEquipos.get(equipoId);
+            if (!item) return;
+            item.cantidad = Math.max(1, Math.min(item.maxStock, item.cantidad + delta));
+            actualizarHiddenFields();
+            renderCart();
+            updateBrowserQty(equipoId, item.cantidad);
+        }
+
+        function removeEquipo(equipoId) {
+            selectedEquipos.delete(equipoId);
+            actualizarHiddenFields();
+            renderCart();
+            updateBrowserCheck(equipoId, false);
+        }
+
+        function updateBrowserCheck(equipoId, checked) {
+            var cb = document.querySelector('.equipo-check[data-id="' + equipoId + '"]');
+            if (cb) {
+                cb.checked = checked;
+                var qtyContainer = document.getElementById('qtyContainer_' + equipoId);
+                if (qtyContainer) qtyContainer.classList.toggle('hidden', !checked);
+            }
+        }
+
+        function updateBrowserQty(equipoId, qty) {
+            var inp = document.querySelector('.qty-input[data-equipo-id="' + equipoId + '"]');
+            if (inp) inp.value = qty;
         }
 
         calcularTotal();
+        renderCart();
 
-        document.getElementById('FechaInicio').addEventListener('change', calcularTotal);
-        document.getElementById('FechaFin').addEventListener('change', calcularTotal);
+        document.getElementById('FechaInicio').addEventListener('change', renderCart);
+        document.getElementById('FechaFin').addEventListener('change', renderCart);
 
         document.getElementById('clienteSearch').addEventListener('input', function() {
             clearTimeout(clienteTimeout);
             var term = this.value.trim();
-            if (term.length < 2) {
-                document.getElementById('clienteResults').style.display = 'none';
-                return;
-            }
+            var results = document.getElementById('clienteResults');
+            if (term.length < 2) { results.classList.add('hidden'); return; }
             clienteTimeout = setTimeout(function() {
                 fetch('/Reservas/GetClientes?term=' + encodeURIComponent(term))
                     .then(function(r) { return r.json(); })
                     .then(function(data) {
-                        var results = document.getElementById('clienteResults');
                         results.innerHTML = '';
-                        if (data.length === 0) {
-                            results.style.display = 'none';
-                            return;
-                        }
+                        if (data.length === 0) { results.classList.add('hidden'); return; }
                         data.forEach(function(c) {
-                            var item = document.createElement('a');
-                            item.className = 'list-group-item list-group-item-action';
-                            item.href = '#';
-                            item.innerHTML = '<strong>' + c.nombre + '</strong><br /><small>' + c.email + '</small>';
-                            item.addEventListener('click', function(e) {
-                                e.preventDefault();
+                            var item = document.createElement('div');
+                            item.className = 'px-4 py-2.5 hover:bg-slate-50 cursor-pointer border-b border-slate-100 last:border-b-0 transition';
+                            item.innerHTML = '<span class="text-sm font-medium text-slate-700">' + c.nombre + '</span><br /><span class="text-xs text-slate-500">' + c.email + '</span>';
+                            item.addEventListener('click', function() {
                                 document.getElementById('ClienteId').value = c.id;
                                 document.getElementById('clienteSearch').value = c.nombre;
                                 document.getElementById('clienteSelected').textContent = 'Cliente seleccionado: ' + c.nombre;
-                                results.style.display = 'none';
+                                results.classList.add('hidden');
                             });
                             results.appendChild(item);
                         });
-                        results.style.display = 'block';
+                        results.classList.remove('hidden');
                     });
             }, 300);
         });
 
         document.addEventListener('click', function(e) {
-            if (!e.target.closest('#clienteSearch') && !e.target.closest('#clienteResults')) {
-                document.getElementById('clienteResults').style.display = 'none';
-            }
+            if (!e.target.closest('#clienteSearch') && !e.target.closest('#clienteResults'))
+                document.getElementById('clienteResults').classList.add('hidden');
         });
 
         function cargarEquipos(term) {
@@ -181,69 +296,67 @@
                     var container = document.getElementById('equiposContainer');
                     container.innerHTML = '';
                     if (data.length === 0) {
-                        container.innerHTML = '<div class="text-center text-muted py-3">No se encontraron equipos</div>';
+                        container.innerHTML = '<div class="text-center text-slate-400 py-3 text-sm">No se encontraron equipos</div>';
                         return;
                     }
                     data.forEach(function(eq) {
-                        var checked = selectedEquipos.has(eq.id) ? 'checked' : '';
-                        var sel = selectedEquipos.get(eq.id);
-                        var stockMax = Math.max(eq.stock, sel ? sel.cantidad : 0);
+                        var isSelected = selectedEquipos.has(eq.id);
                         var div = document.createElement('div');
-                        div.className = 'form-check py-1 border-bottom';
+                        div.className = 'flex items-start gap-3 py-2 px-3 hover:bg-slate-50 rounded-lg transition border-b border-slate-100 last:border-b-0';
                         div.innerHTML =
-                            '<input type="checkbox" class="form-check-input equipo-check" value="' + eq.id + '" data-id="' + eq.id + '" data-nombre="' + eq.nombre.replace(/'/g, "\\'") + '" data-precio="' + eq.precioPorDia + '" ' + checked + '>' +
-                            '<label class="form-check-label w-100">' +
-                                '<strong>' + eq.nombre + '</strong>' +
-                                '<span class="text-muted"> - ' + eq.marca + ' / ' + eq.categoria + '</span>' +
-                                '<span class="float-end">' +
-                                    '<span class="text-success fw-bold">$' + eq.precioPorDia.toFixed(2) + '/día</span>' +
-                                    '<span class="badge bg-secondary ms-2">Stock: ' + eq.stock + '</span>' +
-                                '</span>' +
-                            '</label>' +
-                            '<div class="ms-4 mt-1" style="' + (checked ? '' : 'display:none;') + '" id="qtyContainer_' + eq.id + '">' +
-                                '<label class="small">Cantidad: </label>' +
-                                '<input type="number" class="form-control form-control-sm d-inline-block" style="width:80px;" value="' + (sel ? sel.cantidad : 1) + '" min="1" max="' + stockMax + '" data-equipo-id="' + eq.id + '" />' +
+                            '<input type="checkbox" class="equipo-check mt-1 w-4 h-4 rounded border-slate-300 text-primary-500 focus:ring-primary-400" data-id="' + eq.id + '" ' + (isSelected ? 'checked' : '') + '>' +
+                            '<div class="flex-1">' +
+                                '<div class="flex items-center justify-between">' +
+                                    '<div>' +
+                                        '<span class="text-sm font-medium text-slate-700">' + eq.nombre + '</span>' +
+                                        '<span class="text-xs text-slate-500 ml-1.5">' + eq.marca + ' / ' + eq.categoria + '</span>' +
+                                    '</div>' +
+                                    '<div class="flex items-center gap-2">' +
+                                        '<span class="text-sm font-semibold text-emerald-600">$' + eq.precioPorDia.toFixed(2) + '/día</span>' +
+                                        '<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-600">Stock: ' + eq.stock + '</span>' +
+                                    '</div>' +
+                                '</div>' +
+                                '<div class="mt-1.5 ' + (isSelected ? '' : 'hidden') + '" id="qtyContainer_' + eq.id + '">' +
+                                    '<label class="text-xs text-slate-500 mr-2">Cantidad:</label>' +
+                                    '<input type="number" class="qty-input w-20 px-2 py-1 rounded-lg border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 focus:ring-1 focus:ring-primary-100" value="' + (isSelected ? selectedEquipos.get(eq.id).cantidad : 1) + '" min="1" max="' + eq.stock + '" data-equipo-id="' + eq.id + '" />' +
+                                '</div>' +
                             '</div>';
                         container.appendChild(div);
 
                         var checkbox = div.querySelector('.equipo-check');
                         var qtyContainer = div.querySelector('#qtyContainer_' + eq.id);
-                        var qtyInput = div.querySelector('input[type="number"]');
+                        var qtyInput = div.querySelector('.qty-input');
 
                         checkbox.addEventListener('change', function() {
                             if (this.checked) {
-                                qtyContainer.style.display = 'block';
+                                qtyContainer.classList.remove('hidden');
                                 var qty = parseInt(qtyInput.value) || 1;
-                                selectedEquipos.set(eq.id, { nombre: eq.nombre, precio: eq.precioPorDia, cantidad: qty });
+                                selectedEquipos.set(eq.id, { nombre: eq.nombre, precio: eq.precioPorDia, cantidad: qty, maxStock: eq.stock });
                             } else {
-                                qtyContainer.style.display = 'none';
+                                qtyContainer.classList.add('hidden');
                                 selectedEquipos.delete(eq.id);
                             }
                             actualizarHiddenFields();
-                            calcularTotal();
+                            renderCart();
                         });
 
-                        qtyInput.addEventListener('change', function() {
-                            var qty = parseInt(this.value) || 1;
+                        qtyInput.addEventListener('input', function() {
+                            var qty = Math.max(1, Math.min(eq.stock, parseInt(this.value) || 1));
                             if (selectedEquipos.has(eq.id)) {
                                 selectedEquipos.get(eq.id).cantidad = qty;
                                 actualizarHiddenFields();
-                                calcularTotal();
+                                renderCart();
                             }
                         });
                     });
-                    actualizarHiddenFields();
-                    calcularTotal();
                 })
                 .catch(function() {
-                    document.getElementById('equiposContainer').innerHTML = '<div class="text-center text-danger py-3">Error al cargar equipos</div>';
+                    document.getElementById('equiposContainer').innerHTML = '<div class="text-center text-rose-500 py-3 text-sm">Error al cargar equipos</div>';
                 });
         }
 
         function actualizarHiddenFields() {
-            var existing = document.querySelectorAll('.hidden-equipo, .hidden-cantidad');
-            existing.forEach(function(el) { el.remove(); });
-
+            document.querySelectorAll('.hidden-equipo, .hidden-cantidad').forEach(function(el) { el.remove(); });
             selectedEquipos.forEach(function(item, equipoId) {
                 var inpId = document.createElement('input');
                 inpId.type = 'hidden';

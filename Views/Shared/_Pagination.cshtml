@@ -7,60 +7,51 @@
 
 @if (totalPages > 1)
 {
-    <div class="mt-4">
-        <nav>
-            <ul class="pagination justify-content-center">
-                <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
-                    <a class="page-link" asp-action="@action" asp-route-pageNumber="1" asp-route-searchString="@searchString" title="Primera página">
-                        <i class="bi bi-chevron-double-left"></i>
-                    </a>
-                </li>
-                <li class="page-item @(pageNumber == 1 ? "disabled" : "")">
-                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@(pageNumber - 1)" asp-route-searchString="@searchString" title="Anterior">
-                        <i class="bi bi-chevron-left"></i>
-                    </a>
-                </li>
+    <div class="flex flex-col items-center gap-2 mt-6">
+        <nav class="flex items-center gap-1">
+            <a asp-action="@action" asp-route-pageNumber="1" asp-route-searchString="@searchString"
+               class="px-2.5 py-1.5 rounded-lg text-sm border border-slate-200 text-slate-500 hover:bg-slate-50 transition @(pageNumber == 1 ? "pointer-events-none opacity-40" : "")">
+                <i class="bi bi-chevron-double-left"></i>
+            </a>
+            <a asp-action="@action" asp-route-pageNumber="@(pageNumber - 1)" asp-route-searchString="@searchString"
+               class="px-2.5 py-1.5 rounded-lg text-sm border border-slate-200 text-slate-500 hover:bg-slate-50 transition @(pageNumber == 1 ? "pointer-events-none opacity-40" : "")">
+                <i class="bi bi-chevron-left"></i>
+            </a>
 
-                @{
-                    var startPage = Math.Max(1, pageNumber - 4);
-                    var endPage = Math.Min(totalPages, pageNumber + 4);
-                }
+            @{
+                var startPage = Math.Max(1, pageNumber - 4);
+                var endPage = Math.Min(totalPages, pageNumber + 4);
+            }
 
-                @if (startPage > 1)
-                {
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                }
+            @if (startPage > 1)
+            {
+                <span class="px-2 py-1.5 text-sm text-slate-400">...</span>
+            }
 
-                @for (int i = startPage; i <= endPage; i++)
-                {
-                    <li class="page-item @(i == pageNumber ? "active" : "")">
-                        <a class="page-link" asp-action="@action" asp-route-pageNumber="@i" asp-route-searchString="@searchString">@i</a>
-                    </li>
-                }
+            @for (int i = startPage; i <= endPage; i++)
+            {
+                <a asp-action="@action" asp-route-pageNumber="@i" asp-route-searchString="@searchString"
+                   class="px-3 py-1.5 rounded-lg text-sm font-medium transition @(i == pageNumber ? "bg-primary-500 text-white" : "border border-slate-200 text-slate-600 hover:bg-primary-50 hover:text-primary-600")">
+                    @i
+                </a>
+            }
 
-                @if (endPage < totalPages)
-                {
-                    <li class="page-item disabled">
-                        <span class="page-link">...</span>
-                    </li>
-                }
+            @if (endPage < totalPages)
+            {
+                <span class="px-2 py-1.5 text-sm text-slate-400">...</span>
+            }
 
-                <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
-                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@(pageNumber + 1)" asp-route-searchString="@searchString" title="Siguiente">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
-                </li>
-                <li class="page-item @(pageNumber == totalPages ? "disabled" : "")">
-                    <a class="page-link" asp-action="@action" asp-route-pageNumber="@totalPages" asp-route-searchString="@searchString" title="Última página">
-                        <i class="bi bi-chevron-double-right"></i>
-                    </a>
-                </li>
-            </ul>
+            <a asp-action="@action" asp-route-pageNumber="@(pageNumber + 1)" asp-route-searchString="@searchString"
+               class="px-2.5 py-1.5 rounded-lg text-sm border border-slate-200 text-slate-500 hover:bg-slate-50 transition @(pageNumber == totalPages ? "pointer-events-none opacity-40" : "")">
+                <i class="bi bi-chevron-right"></i>
+            </a>
+            <a asp-action="@action" asp-route-pageNumber="@totalPages" asp-route-searchString="@searchString"
+               class="px-2.5 py-1.5 rounded-lg text-sm border border-slate-200 text-slate-500 hover:bg-slate-50 transition @(pageNumber == totalPages ? "pointer-events-none opacity-40" : "")">
+                <i class="bi bi-chevron-double-right"></i>
+            </a>
         </nav>
-        <p class="text-center text-muted">
-            Página @pageNumber de @totalPages — @ViewBag.TotalRegistros registros
+        <p class="text-xs text-slate-400">
+            Pagina @pageNumber de @totalPages — @ViewBag.TotalRegistros registros
         </p>
     </div>
 }

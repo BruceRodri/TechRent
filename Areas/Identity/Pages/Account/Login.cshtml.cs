@@ -29,6 +29,9 @@ namespace TechRent.Areas.Identity.Pages.Account
         [TempData]
         public string ErrorMessage { get; set; }
 
+        [TempData]
+        public string Error { get; set; }
+
         public class InputModel
         {
             [Required]
@@ -48,6 +51,11 @@ namespace TechRent.Areas.Identity.Pages.Account
             if (!string.IsNullOrEmpty(ErrorMessage))
             {
                 ModelState.AddModelError(string.Empty, ErrorMessage);
+            }
+
+            if (!string.IsNullOrEmpty(Error))
+            {
+                ModelState.AddModelError(string.Empty, Error);
             }
 
             returnUrl ??= Url.Content("~/");

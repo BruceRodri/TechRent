@@ -151,6 +151,7 @@ namespace TechRent.Controllers
         }
 
         [HttpGet]
+        [AllowAnonymous]
         public async Task<IActionResult> GetCount()
         {
             var count = await _context.Clientes.CountAsync();

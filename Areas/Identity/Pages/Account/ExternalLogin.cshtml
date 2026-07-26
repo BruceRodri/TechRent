@@ -1,0 +1,37 @@
+@page
+@model ExternalLoginModel
+@{
+    ViewData["Title"] = "Iniciar sesion con Google";
+}
+
+<div class="min-h-[70vh] flex items-center justify-center fade-in">
+    <div class="w-full max-w-md text-center">
+        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-8">
+            <div class="w-14 h-14 rounded-2xl bg-primary-100 flex items-center justify-center mx-auto mb-4">
+                <svg width="28" height="28" viewBox="0 0 48 48" fill="none">
+                    <path fill="#4285F4" d="M47.532 24.552c0-1.632-.142-3.2-.422-4.704H24.48v8.91h12.964c-.56 2.992-2.25 5.536-4.8 7.242v6.024h7.764c4.542-4.184 7.168-10.336 7.168-17.472z"/>
+                    <path fill="#34A853" d="M24.48 48c6.48 0 11.908-2.144 15.876-5.784l-7.764-6.024c-2.144 1.424-4.88 2.264-8.112 2.264-6.24 0-11.536-4.208-13.424-9.872H3.102v6.216C7.078 42.656 15.222 48 24.48 48z"/>
+                    <path fill="#FBBC05" d="M11.056 28.584c-.48-1.424-.752-2.944-.752-4.584s.272-3.16.752-4.584v-6.216H3.102C1.104 17.064 0 20.392 0 24s1.104 6.936 3.102 9.936l7.954-5.352z"/>
+                    <path fill="#EA4335" d="M24.48 9.544c3.52 0 6.68 1.216 9.168 3.584l6.864-6.864C36.364 2.12 30.948 0 24.48 0 15.222 0 7.078 5.344 3.102 14.064l7.954 5.352c1.888-5.664 7.184-9.872 13.424-9.872z"/>
+                </svg>
+            </div>
+            <h2 class="text-xl font-bold text-slate-800 mb-2">Conectando con Google</h2>
+            <p class="text-sm text-slate-400">Procesando autenticacion externa...</p>
+            <div class="mt-6">
+                <div class="inline-flex items-center gap-2 text-sm text-slate-500">
+                    <svg class="animate-spin w-4 h-4 text-primary-500" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Espere un momento...
+                </div>
+            </div>
+
+            <div asp-validation-summary="All" class="bg-rose-50 border border-rose-200 text-rose-600 text-sm rounded-xl px-4 py-3 mt-4" role="alert"></div>
+
+            <div class="mt-6">
+                <a asp-page="./Login" class="text-xs text-slate-400 hover:text-slate-600 transition">Volver al inicio de sesion</a>
+            </div>
+        </div>
+    </div>
+</div>

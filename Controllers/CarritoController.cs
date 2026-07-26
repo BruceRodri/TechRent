@@ -37,6 +37,39 @@ namespace TechRent.Controllers
         }
 
         [HttpPost]
+        public async Task<IActionResult> AgregarJson(int equipoId, int cantidad = 1, int dias = 1)
+        {
+            var email = GetEmail();
+            var equipo = await _context.Equipos.FindAsync(equipoId);
+            if (equipo == null || !equipo.Activo || equipo.Stock < cantidad)
+                return Json(new { success = false, message = "Equipo no disponible o stock insuficiente." });
+
+            var existente = await _context.CarritoItems
+                .FirstOrDefaultAsync(c => c.UsuarioEmail == email && c.EquipoId == equipoId);
+
+            if (existente != null)
+            {
+                existente.Cantidad += cantidad;
+                existente.Dias = dias;
+                existente.FechaAgregado = DateTime.UtcNow;
+            }
+            else
+            {
+                _context.CarritoItems.Add(new CarritoItem
+                {
+                    UsuarioEmail = email,
+                    EquipoId = equipoId,
+                    Cantidad = cantidad,
+                    Dias = dias
+                });
+            }
+
+            await _context.SaveChangesAsync();
+            var count = await _context.CarritoItems.CountAsync(c => c.UsuarioEmail == email);
+            return Json(new { success = true, message = $"{equipo.Nombre} agregado al carrito.", count });
+        }
+
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Agregar(int equipoId, int cantidad = 1, int dias = 1)
         {
@@ -100,6 +133,46 @@ namespace TechRent.Controllers
 
             TempData["Exito"] = "Carrito actualizado.";
             return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ActualizarJson(int id, int cantidad, int dias)
+        {
+            var email = GetEmail();
+            var item = await _context.CarritoItems
+                .Include(c => c.Equipo)
+                .FirstOrDefaultAsync(c => c.Id == id && c.UsuarioEmail == email);
+
+            if (item == null)
+                return Json(new { success = false, message = "Item no encontrado." });
+
+            if (cantidad < 1) cantidad = 1;
+            if (dias < 1) dias = 1;
+
+            if (cantidad > item.Equipo.Stock)
+                return Json(new { success = false, message = $"Stock insuficiente. Solo hay {item.Equipo.Stock} unidades." });
+
+            item.Cantidad = cantidad;
+            item.Dias = dias;
+            await _context.SaveChangesAsync();
+
+            var subtotal = item.Cantidad * item.Equipo.PrecioPorDia * item.Dias;
+
+            var allItems = await _context.CarritoItems
+                .Include(c => c.Equipo)
+                .Where(c => c.UsuarioEmail == email)
+                .ToListAsync();
+
+            decimal total = allItems.Sum(i => i.Cantidad * i.Equipo.PrecioPorDia * i.Dias);
+
+            return Json(new
+            {
+                success = true,
+                subtotal,
+                total,
+                cantidad,
+                dias
+            });
         }
 
         [HttpPost]
@@ -185,13 +258,25 @@ namespace TechRent.Controllers
             }
 
             _context.OrdenesAlquiler.Add(orden);
-            _context.CarritoItems.RemoveRange(items);
             await _context.SaveChangesAsync();
 
             if (metodoPago == "PayPhone")
                 return RedirectToAction("CreateLink", "Pago", new { ordenId = orden.Id });
 
             return RedirectToAction("PayPalButton", "Pago", new { ordenId = orden.Id });
+        }
+
+        public async Task<IActionResult> Historial()
+        {
+            var email = GetEmail();
+            var ordenes = await _context.OrdenesAlquiler
+                .Include(o => o.Detalles)
+                .Include(o => o.Transacciones)
+                .Where(o => o.UsuarioEmail == email && o.Estado == "Pagado")
+                .OrderByDescending(o => o.FechaCreacion)
+                .ToListAsync();
+
+            return View(ordenes);
         }
     }
 }

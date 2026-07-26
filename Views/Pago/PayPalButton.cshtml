@@ -7,33 +7,39 @@
     ViewData["Title"] = "Pago con PayPal";
 }
 
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white text-center py-3">
-                    <h4 class="mb-0"><i class="bi bi-paypal"></i> Pago con PayPal Sandbox</h4>
+<div class="max-w-lg mx-auto fade-in">
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="bg-gradient-to-r from-[#0070ba] to-[#005ea6] px-6 py-5 text-center">
+            <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center mx-auto mb-2">
+                <i class="bi bi-paypal text-white text-xl"></i>
+            </div>
+            <h4 class="text-white font-semibold">Pago con PayPal Sandbox</h4>
+        </div>
+
+        <div class="p-6">
+            <div class="flex items-center justify-between bg-slate-50 rounded-xl px-4 py-3 mb-4">
+                <div>
+                    <span class="text-xs text-slate-400 block">Orden</span>
+                    <span class="text-sm font-semibold text-slate-700">#@Model.Id</span>
                 </div>
-                <div class="card-body p-4">
-                    <div class="mb-3">
-                        <p><strong>Orden:</strong> #@Model.Id</p>
-                        <p><strong>Total:</strong> <span class="text-success fs-4">$@Model.Total.ToString("0.00")</span></p>
-                        <p><strong>Estado:</strong> <span class="badge bg-warning">@Model.Estado</span></p>
-                    </div>
-
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        Botón oficial de PayPal embebido. Desde Sandbox puedes probar con cuenta Sandbox o tarjeta de prueba.
-                    </div>
-
-                    <div id="paypal-button-container" class="my-3"></div>
-                    <div id="paypal-message"></div>
-
-                    <a asp-controller="Carrito" asp-action="Index" class="btn btn-outline-secondary mt-3">
-                        <i class="bi bi-arrow-left"></i> Volver al carrito
-                    </a>
+                <div class="text-right">
+                    <span class="text-xs text-slate-400 block">Total</span>
+                    <span class="text-lg font-bold text-emerald-600">$@Model.Total.ToString("0.00")</span>
                 </div>
             </div>
+
+            <div class="bg-primary-50 border border-primary-100 text-primary-700 rounded-xl px-4 py-3 mb-4 text-sm flex items-start gap-2">
+                <i class="bi bi-info-circle mt-0.5"></i>
+                <span>Boton oficial de PayPal embebido. Desde Sandbox puedes probar con cuenta Sandbox o tarjeta de prueba.</span>
+            </div>
+
+            <div id="paypal-button-container" class="mb-4"></div>
+            <div id="paypal-message"></div>
+
+            <a asp-controller="Carrito" asp-action="Index"
+               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:border-slate-300 hover:text-slate-700 transition mt-2">
+                <i class="bi bi-arrow-left"></i> Volver al carrito
+            </a>
         </div>
     </div>
 </div>
@@ -45,8 +51,10 @@
         let transaccionPagoId = 0;
 
         function showMessage(message, type) {
+            var colors = { danger: 'rose', warning: 'amber', success: 'emerald' };
+            var c = colors[type] || 'slate';
             document.getElementById('paypal-message').innerHTML =
-                '<div class="alert alert-' + type + '">' + message + '</div>';
+                '<div class="bg-' + c + '-50 border border-' + c + '-200 text-' + c + '-600 rounded-xl px-4 py-3 text-sm flex items-center gap-2"><i class="bi bi-info-circle"></i> ' + message + '</div>';
         }
 
         paypal.Buttons({
@@ -85,7 +93,7 @@
             },
             onError: function (err) {
                 console.error(err);
-                showMessage('Ocurrió un error con PayPal.', 'danger');
+                showMessage('Ocurrio un error con PayPal.', 'danger');
             }
         }).render('#paypal-button-container');
     </script>

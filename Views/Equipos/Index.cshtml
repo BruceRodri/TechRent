@@ -1,127 +1,102 @@
 @model IEnumerable<TechRent.Models.Equipo>
 
 @{
-    ViewData["Title"] = "Equipos Tecnológicos";
+    ViewData["Title"] = "Equipos Tecnologicos";
 }
 
-<div class="container mt-4">
-    <!-- Encabezado -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="fade-in">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
         <div>
-            <h1>
-                <i class="bi bi-laptop" style="color: #4361ee;"></i> 
-                Equipos Tecnológicos
+            <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                <i class="bi bi-laptop text-primary-500"></i> Equipos Tecnologicos
             </h1>
-            <p class="text-muted">Gestión completa de equipos disponibles para alquiler</p>
+            <p class="text-sm text-slate-400">Gestion completa de equipos disponibles para alquiler</p>
         </div>
-        <a asp-action="Create" class="btn btn-primary btn-lg">
+        <a asp-action="Create" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
             <i class="bi bi-plus-circle"></i> Nuevo Equipo
         </a>
     </div>
 
-    <!-- Tarjeta de resumen -->
-    <div class="row mb-4">
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-laptop" style="color: #4361ee;"></i>
-                <div class="number">@ViewBag.TotalRegistros</div>
-                <div class="text-muted">Equipos Registrados</div>
-            </div>
+    <div class="grid grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-laptop text-primary-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.TotalRegistros</h3>
+            <p class="text-xs text-slate-500">Registrados</p>
         </div>
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-tag" style="color: #06d6a0;"></i>
-                <div class="number">@ViewBag.TotalStock</div>
-                <div class="text-muted">Unidades en Stock</div>
-            </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-tag text-emerald-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.TotalStock</h3>
+            <p class="text-xs text-slate-500">En Stock</p>
         </div>
-        <div class="col-md-4">
-            <div class="dashboard-card">
-                <i class="bi bi-currency-dollar" style="color: #f72585;"></i>
-                <div class="number">$@ViewBag.PrecioPromedio.ToString("0.00")</div>
-                <div class="text-muted">Precio Promedio/Día</div>
-            </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-currency-dollar text-rose-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">$@ViewBag.PrecioPromedio.ToString("0.00")</h3>
+            <p class="text-xs text-slate-500">Precio Promedio/Dia</p>
         </div>
     </div>
 
-    <form method="get" class="mb-3">
-        <div class="input-group">
-            <input type="text" name="searchString" class="form-control" placeholder="Buscar por nombre o descripción..." value="@ViewBag.SearchString" />
-            <button type="submit" class="btn btn-primary"><i class="bi bi-search"></i> Buscar</button>
-            <a asp-action="Index" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Limpiar</a>
-        </div>
+    <form method="get" class="flex gap-2 mb-6">
+        <input type="text" name="searchString" value="@ViewBag.SearchString"
+               class="flex-1 px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 placeholder-slate-400 focus:outline-none focus:border-primary-400 focus:ring-2 focus:ring-primary-100 transition"
+               placeholder="Buscar por nombre o descripcion..." />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition"><i class="bi bi-search"></i> Buscar</button>
+        <a asp-action="Index" class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-medium text-slate-500 hover:bg-slate-50 transition"><i class="bi bi-x-circle"></i> Limpiar</a>
     </form>
 
-    <!-- Tabla de equipos -->
-    <div class="card">
-        <div class="card-header">
-            <i class="bi bi-list-check"></i> Lista de Equipos
-        </div>
-        <div class="card-body p-0">
-            <table class="table table-hover mb-0">
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
                 <thead>
-                    <tr>
-                        <th><i class="bi bi-image"></i> Equipo</th>
-                        <th><i class="bi bi-tag"></i> Categoría</th>
-                        <th><i class="bi bi-building"></i> Marca</th>
-                        <th><i class="bi bi-currency-dollar"></i> Precio/Día</th>
-                        <th><i class="bi bi-box"></i> Stock</th>
-                        <th><i class="bi bi-gear"></i> Acciones</th>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-image mr-1"></i> Equipo</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-tag mr-1"></i> Categoria</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-building mr-1"></i> Marca</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-currency-dollar mr-1"></i> Precio/Dia</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-box mr-1"></i> Stock</th>
+                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-gear mr-1"></i> Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var item in Model)
                     {
-                        <tr>
-                            <td>
-                                <strong>@item.Nombre</strong>
-                                <br />
-                                <small class="text-muted">@(item.Descripcion?.Length > 50 ? item.Descripcion.Substring(0, 50) + "..." : item.Descripcion)</small>
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-4 py-3">
+                                <span class="font-medium text-slate-700 block">@item.Nombre</span>
+                                <span class="text-xs text-slate-400">@(item.Descripcion?.Length > 50 ? item.Descripcion.Substring(0, 50) + "..." : item.Descripcion)</span>
                             </td>
-                            <td>
-                                <span class="badge bg-info">@item.Categoria?.Nombre</span>
+                            <td class="px-4 py-3"><span class="inline-flex px-2 py-0.5 rounded-md bg-primary-50 text-primary-600 text-xs font-medium">@item.Categoria?.Nombre</span></td>
+                            <td class="px-4 py-3 text-slate-600">@item.Marca?.Nombre</td>
+                            <td class="px-4 py-3">
+                                <span class="font-semibold text-emerald-600">$@item.PrecioPorDia.ToString("0.00")</span>
+                                <span class="text-xs text-slate-400 block">/dia</span>
                             </td>
-                            <td>@item.Marca?.Nombre</td>
-                            <td>
-                                <strong class="text-success">$@item.PrecioPorDia.ToString("0.00")</strong>
-                                <br />
-                                <small>/día</small>
-                            </td>
-                            <td>
+                            <td class="px-4 py-3">
                                 @if (item.Stock > 5)
                                 {
-                                    <span class="badge bg-success">@item.Stock disponibles</span>
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-600 text-xs font-medium">@item.Stock disp.</span>
                                 }
                                 else if (item.Stock > 0)
                                 {
-                                    <span class="badge bg-warning">@item.Stock disponibles</span>
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-amber-50 text-amber-600 text-xs font-medium">@item.Stock disp.</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-danger">Agotado</span>
+                                    <span class="inline-flex px-2 py-0.5 rounded-md bg-rose-50 text-rose-600 text-xs font-medium">Agotado</span>
                                 }
                             </td>
-                            <td>
-                                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-primary">
-                                    <i class="bi bi-pencil"></i>
-                                </a>
-                                <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-info">
-                                    <i class="bi bi-eye"></i>
-                                </a>
-                                @if (item.Stock > 0)
-                                {
-                                    <form asp-controller="Carrito" asp-action="Agregar" method="post" class="d-inline">
-                                        <input type="hidden" name="equipoId" value="@item.Id" />
-                                        <input type="hidden" name="cantidad" value="1" />
-                                        <input type="hidden" name="dias" value="1" />
-                                        <button type="submit" class="btn btn-sm btn-success" title="Agregar al carrito">
-                                            <i class="bi bi-cart-plus"></i>
+                            <td class="px-4 py-3">
+                                <div class="flex items-center gap-1">
+                                    <a asp-action="Edit" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-primary-500 hover:bg-primary-50 transition" title="Editar"><i class="bi bi-pencil text-sm"></i></a>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-slate-400 hover:bg-slate-100 transition" title="Ver"><i class="bi bi-eye text-sm"></i></a>
+                                    @if (item.Stock > 0)
+                                    {
+                                        <button type="button" class="p-1.5 rounded-lg text-emerald-500 hover:bg-emerald-50 transition" title="Agregar al carrito"
+                                                onclick="agregarAlCarrito(@item.Id, this, '@item.Nombre.Replace("'", "\\'")', @item.Stock)">
+                                            <i class="bi bi-cart-plus text-sm"></i>
                                         </button>
-                                    </form>
-                                }
-                                <a asp-action="Delete" asp-route-id="@item.Id" class="btn btn-sm btn-danger">
-                                    <i class="bi bi-trash"></i>
-                                </a>
+                                    }
+                                    <a asp-action="Delete" asp-route-id="@item.Id" class="p-1.5 rounded-lg text-rose-400 hover:bg-rose-50 transition" title="Eliminar"><i class="bi bi-trash text-sm"></i></a>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -131,3 +106,39 @@
     </div>
     @await Html.PartialAsync("_Pagination")
 </div>
+
+@section Scripts {
+    <script>
+        function showToast(message, type) {
+            var toast = document.createElement('div');
+            toast.className = 'fixed bottom-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 transition transform translate-y-0 opacity-100 ' +
+                (type === 'success' ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white');
+            toast.innerHTML = '<i class="bi ' + (type === 'success' ? 'bi-check-circle' : 'bi-exclamation-circle') + '"></i> ' + message;
+            document.body.appendChild(toast);
+            setTimeout(function() {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(function() { toast.remove(); }, 300);
+            }, 3000);
+        }
+
+        function agregarAlCarrito(equipoId, btn, nombre, stock) {
+            var token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            fetch('/Carrito/AgregarJson', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'RequestVerificationToken': token },
+                body: 'equipoId=' + equipoId + '&cantidad=1&dias=1'
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    btn.innerHTML = '<i class="bi bi-check-lg text-sm"></i>';
+                    setTimeout(function() { btn.innerHTML = '<i class="bi bi-cart-plus text-sm"></i>'; }, 1500);
+                    var badge = document.getElementById('cart-count');
+                    if (badge) { badge.textContent = data.count; badge.style.display = 'flex'; }
+                    showToast(nombre + ' agregado. Stock disponible: ' + stock, 'success');
+                } else { alert(data.message); }
+            })
+            .catch(function() { alert('Error al agregar al carrito.'); });
+        }
+    </script>
+}

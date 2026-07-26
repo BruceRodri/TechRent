@@ -9,16 +9,17 @@
     }
 }
 
-<h1>Gestionar tu cuenta</h1>
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800">Gestionar tu cuenta</h1>
+        <p class="text-sm text-slate-400">Cambiar la configuracion de tu cuenta</p>
+    </div>
 
-<div>
-    <h2>Cambiar la configuracion de tu cuenta</h2>
-    <hr />
-    <div class="row">
-        <div class="col-md-3">
+    <div class="flex flex-col md:flex-row gap-6">
+        <div class="md:w-56 shrink-0">
             <partial name="_ManageNav" />
         </div>
-        <div class="col-md-9">
+        <div class="flex-1 min-w-0">
             @RenderBody()
         </div>
     </div>
