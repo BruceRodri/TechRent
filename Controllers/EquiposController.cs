@@ -13,11 +13,13 @@ namespace TechRent.Controllers
     {
         private readonly AppDbContext _context;
         private readonly InventarioService _inventario;
+        private readonly IAuditService _audit;
 
-        public EquiposController(AppDbContext context, InventarioService inventario)
+        public EquiposController(AppDbContext context, InventarioService inventario, IAuditService audit)
         {
             _context = context;
             _inventario = inventario;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -135,8 +137,10 @@ namespace TechRent.Controllers
 
             if (ModelState.IsValid)
             {
+                equipo.CreadoPor = User.Identity?.Name;
                 _context.Add(equipo);
                 await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Creacion de equipo", "Equipo", equipo.Id.ToString(), null, AuditService.SerializeObject(equipo), user: User, httpContext: HttpContext);
                 return RedirectToAction(nameof(Index));
             }
             ViewData["CategoriaId"] = new SelectList(_context.Categorias, "Id", "Nombre", equipo.CategoriaId);
@@ -183,6 +187,8 @@ namespace TechRent.Controllers
                     var dbEquipo = await _context.Equipos.FindAsync(id);
                     if (dbEquipo == null) return NotFound();
 
+                    var antes = AuditService.SerializeObject(new { dbEquipo.Nombre, dbEquipo.Descripcion, dbEquipo.PrecioPorDia, dbEquipo.Stock, dbEquipo.CategoriaId, dbEquipo.MarcaId });
+
                     dbEquipo.Nombre = equipo.Nombre;
                     dbEquipo.Descripcion = equipo.Descripcion;
                     dbEquipo.PrecioPorDia = equipo.PrecioPorDia;
@@ -192,8 +198,12 @@ namespace TechRent.Controllers
                     dbEquipo.CategoriaId = equipo.CategoriaId;
                     dbEquipo.MarcaId = equipo.MarcaId;
                     dbEquipo.FechaActualizacion = DateTime.UtcNow;
+                    dbEquipo.ActualizadoPor = User.Identity?.Name;
 
                     await _context.SaveChangesAsync();
+
+                    var despues = AuditService.SerializeObject(new { equipo.Nombre, equipo.Descripcion, equipo.PrecioPorDia, equipo.Stock, equipo.CategoriaId, equipo.MarcaId });
+                    await _audit.RegistrarAsync("Modificacion de equipo", "Equipo", id.ToString(), antes, despues, user: User, httpContext: HttpContext);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -230,6 +240,9 @@ namespace TechRent.Controllers
                 equipo.Activo = false;
                 equipo.FechaEliminacion = DateTime.UtcNow;
                 equipo.FechaActualizacion = DateTime.UtcNow;
+                equipo.EliminadoPor = User.Identity?.Name;
+                await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Eliminacion logica de equipo", "Equipo", id.ToString(), "Activo=true", "Activo=false", user: User, httpContext: HttpContext);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
@@ -261,12 +274,14 @@ namespace TechRent.Controllers
                 return Json(new { success = false, message = $"Stock insuficiente. Stock actual: {equipo.Stock}." });
 
             var tipoMovimiento = cantidad > 0 ? "Ajuste de inventario (+)" : "Ajuste de inventario (-)";
+            var stockAnterior = equipo.Stock;
             equipo.Stock += cantidad;
             _inventario.RegistrarMovimiento(equipo, tipoMovimiento, cantidad,
                 referencia: "Ajuste manual",
                 observacion: string.IsNullOrWhiteSpace(observacion) ? $"Ajuste manual de {cantidad} unidades" : observacion);
 
             await _context.SaveChangesAsync();
+            await _audit.RegistrarAsync("Ajuste manual de stock", "Equipo", id.ToString(), $"Stock={stockAnterior}", $"Stock={equipo.Stock}", $"Cantidad: {cantidad}, Observacion: {observacion}", User, HttpContext);
 
             return Json(new
             {

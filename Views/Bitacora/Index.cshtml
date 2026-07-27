@@ -45,15 +45,13 @@
                         <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-lightning mr-1"></i> Accion</th>
                         <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-arrow-right mr-1"></i> Metodo</th>
                         <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-link mr-1"></i> Ruta</th>
-                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-globe mr-1"></i> IP</th>
-                        <th class="text-left px-4 py-3 font-medium text-slate-500"><i class="bi bi-chat-left-text mr-1"></i> Detalles</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if (!Model.Any())
                     {
                         <tr>
-                            <td colspan="7" class="px-4 py-8 text-center text-slate-400">
+                            <td colspan="5" class="px-4 py-8 text-center text-slate-400">
                                 <i class="bi bi-inbox text-3xl mb-2 block"></i>
                                 No hay registros de auditoria.
                             </td>
@@ -82,8 +80,6 @@
                             </td>
                             <td class="px-4 py-3 text-xs text-slate-500">@(item.Metodo ?? "—")</td>
                             <td class="px-4 py-3 text-xs text-slate-500 max-w-[200px] truncate" title="@item.Ruta">@(item.Ruta ?? "—")</td>
-                            <td class="px-4 py-3 text-xs text-slate-500 whitespace-nowrap">@(item.IpAddress ?? "—")</td>
-                            <td class="px-4 py-3 text-xs text-slate-400 max-w-[200px] truncate" title="@item.Detalles">@(item.Detalles ?? "—")</td>
                         </tr>
                     }
                 </tbody>

@@ -16,6 +16,18 @@ namespace TechRent.Models
         [StringLength(100)]
         public string Accion { get; set; } = string.Empty;
 
+        [StringLength(100)]
+        public string? Entidad { get; set; }
+
+        [StringLength(100)]
+        public string? IdentificadorEntidad { get; set; }
+
+        [StringLength(4000)]
+        public string? ValorAnterior { get; set; }
+
+        [StringLength(4000)]
+        public string? ValorNuevo { get; set; }
+
         [StringLength(50)]
         public string? Metodo { get; set; }
 

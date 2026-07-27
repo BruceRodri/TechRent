@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using TechRent.Data;
 using TechRent.Models;
 
@@ -17,6 +18,19 @@ namespace TechRent.Services
 
         public async Task RegistrarAsync(string accion, string? detalles = null, ClaimsPrincipal? user = null, HttpContext? httpContext = null)
         {
+            await RegistrarAsync(accion, null, null, null, null, detalles, user, httpContext);
+        }
+
+        public async Task RegistrarAsync(
+            string accion,
+            string? entidad = null,
+            string? identificadorEntidad = null,
+            string? valorAnterior = null,
+            string? valorNuevo = null,
+            string? detalles = null,
+            ClaimsPrincipal? user = null,
+            HttpContext? httpContext = null)
+        {
             try
             {
                 using var scope = _serviceProvider.CreateScope();
@@ -30,6 +44,10 @@ namespace TechRent.Services
                     UserId = userId,
                     Email = email,
                     Accion = accion,
+                    Entidad = entidad,
+                    IdentificadorEntidad = identificadorEntidad,
+                    ValorAnterior = valorAnterior,
+                    ValorNuevo = valorNuevo,
                     Metodo = httpContext?.Request?.Method,
                     Ruta = httpContext?.Request?.Path,
                     IpAddress = GetClientIp(httpContext),
@@ -45,6 +63,16 @@ namespace TechRent.Services
             {
                 _logger.LogWarning(ex, "Error al registrar auditoria: {Accion}", accion);
             }
+        }
+
+        public static string? SerializeObject(object? obj)
+        {
+            if (obj == null) return null;
+            try
+            {
+                return JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = false });
+            }
+            catch { return obj.ToString(); }
         }
 
         private static string? GetClientIp(HttpContext? httpContext)

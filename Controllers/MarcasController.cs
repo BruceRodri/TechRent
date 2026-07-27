@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -10,10 +11,12 @@ namespace TechRent.Controllers
     public class MarcasController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public MarcasController(AppDbContext context)
+        public MarcasController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -66,8 +69,10 @@ namespace TechRent.Controllers
             if (ModelState.IsValid)
             {
                 marca.FechaCreacion = DateTime.UtcNow;
+                marca.CreadoPor = User.Identity?.Name;
                 _context.Add(marca);
                 await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Creacion de marca", "Marca", marca.Id.ToString(), null, AuditService.SerializeObject(marca), user: User, httpContext: HttpContext);
                 return RedirectToAction(nameof(Index));
             }
             return View(marca);
@@ -96,12 +101,18 @@ namespace TechRent.Controllers
                     var dbMarca = await _context.Marcas.FindAsync(id);
                     if (dbMarca == null) return NotFound();
 
+                    var antes = AuditService.SerializeObject(new { dbMarca.Nombre, dbMarca.PaisOrigen });
+
                     dbMarca.Nombre = marca.Nombre;
                     dbMarca.PaisOrigen = marca.PaisOrigen;
                     dbMarca.Activo = marca.Activo;
                     dbMarca.FechaActualizacion = DateTime.UtcNow;
+                    dbMarca.ActualizadoPor = User.Identity?.Name;
 
                     await _context.SaveChangesAsync();
+
+                    var despues = AuditService.SerializeObject(new { marca.Nombre, marca.PaisOrigen });
+                    await _audit.RegistrarAsync("Modificacion de marca", "Marca", id.ToString(), antes, despues, user: User, httpContext: HttpContext);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -131,6 +142,9 @@ namespace TechRent.Controllers
                 item.Activo = false;
                 item.FechaEliminacion = DateTime.UtcNow;
                 item.FechaActualizacion = DateTime.UtcNow;
+                item.EliminadoPor = User.Identity?.Name;
+                await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Eliminacion logica de marca", "Marca", id.ToString(), "Activo=true", "Activo=false", user: User, httpContext: HttpContext);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

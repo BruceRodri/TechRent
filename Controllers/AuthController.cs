@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -8,11 +9,13 @@ namespace TechRent.Controllers
     {
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IAuditService _audit;
 
-        public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager)
+        public AuthController(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, IAuditService audit)
         {
             _signInManager = signInManager;
             _userManager = userManager;
+            _audit = audit;
         }
 
         [HttpPost]
@@ -43,6 +46,8 @@ namespace TechRent.Controllers
 
             if (result.Succeeded)
             {
+                var googleEmail = info.Principal.FindFirstValue(System.Security.Claims.ClaimTypes.Email);
+                await _audit.RegistrarAsync("Inicio de sesion exitoso - Google", detalles: $"Provider: {info.LoginProvider}, Email: {googleEmail}", user: info.Principal, httpContext: HttpContext);
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                     return Redirect(returnUrl);
                 return RedirectToAction("Index", "Home");
@@ -84,8 +89,9 @@ namespace TechRent.Controllers
                 var callbackUrl = Url.Action("ConfirmEmail", "Account", new { area = "Identity", userId = user.Id, code }, protocol: Request.Scheme);
             }
 
-            await _userManager.AddLoginAsync(user, info);
-            await _signInManager.SignInAsync(user, isPersistent: true);
+                await _userManager.AddLoginAsync(user, info);
+                await _signInManager.SignInAsync(user, isPersistent: true);
+                await _audit.RegistrarAsync("Registro de usuario via Google", "IdentityUser", user.Id, null, $"Email: {email}", null, info.Principal, HttpContext);
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 return Redirect(returnUrl);

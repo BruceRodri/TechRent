@@ -30,9 +30,15 @@ namespace TechRent.Models
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 
         public DateTime? FechaActualizacion { get; set; }
+        [StringLength(450)]
+        public string? CreadoPor { get; set; }
+        [StringLength(450)]
+        public string? ActualizadoPor { get; set; }
 
         // Relación: un cliente puede tener muchas reservas
         public ICollection<Reserva> Reservas { get; set; } = new List<Reserva>();
         public DateTime? FechaEliminacion { get; set; }
+        [StringLength(450)]
+        public string? EliminadoPor { get; set; }
     }
 }

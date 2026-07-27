@@ -66,7 +66,10 @@ builder.Services.AddTransient<IPaymentGateway>(sp => sp.GetRequiredService<PayPa
 builder.Services.AddTransient<IPaymentGateway>(sp => sp.GetRequiredService<PayPhoneApiLinkService>());
 builder.Services.AddTransient<IEmailSender<IdentityUser>, GmailEmailSender>();
 builder.Services.AddTransient<TechRent.Services.IEmailSender, GmailEmailSender>();
-builder.Services.AddHttpClient<OllamaService>();
+builder.Services.AddHttpClient<IAIService, OllamaService>(client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
 builder.Services.AddScoped<InventarioService>();
 builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddSingleton<IEmailQueue, EmailQueue>();

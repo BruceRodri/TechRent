@@ -10,11 +10,9 @@
             </h1>
             <p class="text-sm text-slate-400">Indicadores y estadisticas del sistema TechRent</p>
         </div>
-        <a asp-action="Transacciones" class="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition shadow-sm">
-            <i class="bi bi-credit-card"></i> Ver Transacciones de Pago
-        </a>
     </div>
 
+    <!-- Resumen general -->
     <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
             <i class="bi bi-laptop text-primary-400 text-xl mb-2 block"></i>
@@ -56,7 +54,8 @@
         </div>
     </div>
 
-    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+    <!-- Top 5 equipos mas alquilados -->
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden mb-6">
         <div class="px-5 py-4 border-b border-slate-100">
             <h2 class="text-sm font-semibold text-slate-700 flex items-center gap-2">
                 <i class="bi bi-trophy text-amber-400"></i> Top 5 Equipos Mas Alquilados
@@ -91,5 +90,104 @@
                 </tbody>
             </table>
         </div>
+    </div>
+
+    <!-- Links a reportes -->
+    <div class="mb-4">
+        <h2 class="text-sm font-semibold text-slate-700 mb-3 flex items-center gap-2">
+            <i class="bi bi-list-check text-primary-400"></i> Reportes Disponibles
+        </h2>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <a asp-action="Transacciones" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center group-hover:bg-blue-100 transition">
+                    <i class="bi bi-credit-card text-blue-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Pagos por Pasarela</h3>
+            </div>
+            <p class="text-xs text-slate-400">Resumen de transacciones por PayPal y PayPhone con filtros por estado y fecha.</p>
+        </a>
+
+        <a asp-action="VentasPorFecha" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 flex items-center justify-center group-hover:bg-emerald-100 transition">
+                    <i class="bi bi-calendar-range text-emerald-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Ventas por Fecha</h3>
+            </div>
+            <p class="text-xs text-slate-400">Reservas agrupadas por dia, semana o mes con rango de fechas configurable.</p>
+        </a>
+
+        <a asp-action="IngresosPorMes" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center group-hover:bg-indigo-100 transition">
+                    <i class="bi bi-cash-stack text-indigo-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Ingresos por Mes</h3>
+            </div>
+            <p class="text-xs text-slate-400">Resumen mensual de reservas, montos totales y promedio por reserva.</p>
+        </a>
+
+        <a asp-action="ClientesTopCompras" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition">
+                    <i class="bi bi-trophy text-amber-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Clientes Top Compras</h3>
+            </div>
+            <p class="text-xs text-slate-400">Ranking de clientes por numero de reservas y monto total gastado.</p>
+        </a>
+
+        <a asp-action="InventarioBajo" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center group-hover:bg-rose-100 transition">
+                    <i class="bi bi-box-seam text-rose-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Inventario Bajo</h3>
+            </div>
+            <p class="text-xs text-slate-400">Equipos con stock critico, filtrables por umbral, categoria y marca.</p>
+        </a>
+
+        <a asp-action="IntentosAccesoFallidos" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center group-hover:bg-red-100 transition">
+                    <i class="bi bi-shield-lock text-red-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Accesos Fallidos</h3>
+            </div>
+            <p class="text-xs text-slate-400">Registro de accesos denegados y cuentas bloqueadas con filtros por fecha.</p>
+        </a>
+
+        <a asp-action="TiempoPromedioIA" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition">
+                    <i class="bi bi-robot text-purple-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Tiempo Respuesta IA</h3>
+            </div>
+            <p class="text-xs text-slate-400">Metricas de rendimiento del modelo Ollama: promedio, minimo y maximo.</p>
+        </a>
+
+        <a asp-controller="MovimientosInventario" asp-action="Index" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center group-hover:bg-sky-100 transition">
+                    <i class="bi bi-arrow-left-right text-sky-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Movimientos Inventario</h3>
+            </div>
+            <p class="text-xs text-slate-400">Historial de movimientos de stock con filtros por equipo y tipo de movimiento.</p>
+        </a>
+
+        <a asp-controller="Bitacora" asp-action="Index" class="bg-white rounded-xl p-5 border border-slate-100 hover:border-primary-300 hover:shadow-md transition group">
+            <div class="flex items-center gap-3 mb-2">
+                <div class="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center group-hover:bg-slate-100 transition">
+                    <i class="bi bi-journal-text text-slate-500"></i>
+                </div>
+                <h3 class="font-semibold text-slate-700">Bitacora / Auditoria</h3>
+            </div>
+            <p class="text-xs text-slate-400">Registro completo de acciones del sistema con filtros por email, accion y fecha.</p>
+        </a>
     </div>
 </div>

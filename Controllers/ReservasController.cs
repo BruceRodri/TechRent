@@ -16,13 +16,15 @@ namespace TechRent.Controllers
         private readonly InventarioService _inventario;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailNotificationService _emailNotification;
+        private readonly IAuditService _audit;
 
-        public ReservasController(AppDbContext context, InventarioService inventario, UserManager<IdentityUser> userManager, IEmailNotificationService emailNotification)
+        public ReservasController(AppDbContext context, InventarioService inventario, UserManager<IdentityUser> userManager, IEmailNotificationService emailNotification, IAuditService audit)
         {
             _context = context;
             _inventario = inventario;
             _userManager = userManager;
             _emailNotification = emailNotification;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -382,6 +384,9 @@ namespace TechRent.Controllers
                 item.Activo = false;
                 item.FechaEliminacion = DateTime.UtcNow;
                 item.FechaActualizacion = DateTime.UtcNow;
+                item.EliminadoPor = User.Identity?.Name;
+                await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Eliminacion logica de reserva", "Reserva", id.ToString(), "Activo=true", "Activo=false", user: User, httpContext: HttpContext);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

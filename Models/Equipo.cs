@@ -18,6 +18,10 @@ namespace TechRent.Models
         public bool Activo { get; set; } = true;
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime? FechaActualizacion { get; set; }
+        [StringLength(450)]
+        public string? CreadoPor { get; set; }
+        [StringLength(450)]
+        public string? ActualizadoPor { get; set; }
         [Timestamp]
         public byte[] RowVersion { get; set; } = null!;
         public int CategoriaId { get; set; }
@@ -27,5 +31,7 @@ namespace TechRent.Models
         public ICollection<DetalleReserva> DetalleReservas { get; set; } = new List<DetalleReserva>();
         public ICollection<MovimientoInventario> MovimientosInventario { get; set; } = new List<MovimientoInventario>();
         public DateTime? FechaEliminacion { get; set; }
+        [StringLength(450)]
+        public string? EliminadoPor { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -10,10 +11,12 @@ namespace TechRent.Controllers
     public class ClientesController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public ClientesController(AppDbContext context)
+        public ClientesController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -72,8 +75,10 @@ namespace TechRent.Controllers
             if (ModelState.IsValid)
             {
                 cliente.FechaCreacion = DateTime.UtcNow;
+                cliente.CreadoPor = User.Identity?.Name;
                 _context.Add(cliente);
                 await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Creacion de cliente", "Cliente", cliente.Id.ToString(), null, AuditService.SerializeObject(cliente), user: User, httpContext: HttpContext);
                 return RedirectToAction(nameof(Index));
             }
             return View(cliente);
@@ -102,6 +107,8 @@ namespace TechRent.Controllers
                     var dbCliente = await _context.Clientes.FindAsync(id);
                     if (dbCliente == null) return NotFound();
 
+                    var antes = AuditService.SerializeObject(new { dbCliente.NombreCompleto, dbCliente.Email, dbCliente.Telefono, dbCliente.Direccion });
+
                     dbCliente.NombreCompleto = cliente.NombreCompleto;
                     dbCliente.Email = cliente.Email;
                     dbCliente.Telefono = cliente.Telefono;
@@ -109,8 +116,12 @@ namespace TechRent.Controllers
                     dbCliente.DocumentoIdentidad = cliente.DocumentoIdentidad;
                     dbCliente.Activo = cliente.Activo;
                     dbCliente.FechaActualizacion = DateTime.UtcNow;
+                    dbCliente.ActualizadoPor = User.Identity?.Name;
 
                     await _context.SaveChangesAsync();
+
+                    var despues = AuditService.SerializeObject(new { cliente.NombreCompleto, cliente.Email, cliente.Telefono, cliente.Direccion });
+                    await _audit.RegistrarAsync("Modificacion de cliente", "Cliente", id.ToString(), antes, despues, user: User, httpContext: HttpContext);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -140,6 +151,9 @@ namespace TechRent.Controllers
                 cliente.Activo = false;
                 cliente.FechaEliminacion = DateTime.UtcNow;
                 cliente.FechaActualizacion = DateTime.UtcNow;
+                cliente.EliminadoPor = User.Identity?.Name;
+                await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Eliminacion logica de cliente", "Cliente", id.ToString(), "Activo=true", "Activo=false", user: User, httpContext: HttpContext);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

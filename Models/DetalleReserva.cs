@@ -23,6 +23,10 @@ namespace TechRent.Models
 
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime? FechaActualizacion { get; set; }
+        [StringLength(450)]
+        public string? CreadoPor { get; set; }
+        [StringLength(450)]
+        public string? ActualizadoPor { get; set; }
 
         public bool Activo { get; set; } = true;
 
@@ -33,5 +37,7 @@ namespace TechRent.Models
         public int EquipoId { get; set; }
         public Equipo Equipo { get; set; } = null!;
         public DateTime? FechaEliminacion { get; set; }
+        [StringLength(450)]
+        public string? EliminadoPor { get; set; }
     }
 }

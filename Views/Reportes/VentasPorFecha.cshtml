@@ -1,0 +1,84 @@
+@{
+    ViewData["Title"] = "Ventas por Fecha";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-calendar-range text-primary-500"></i> Ventas por Fecha
+        </h1>
+        <p class="text-sm text-slate-400">Reservas agrupadas por dia, semana o mes</p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.TotalReservas</h3>
+            <p class="text-xs text-slate-500">Total Reservas</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <h3 class="text-2xl font-bold text-slate-800">$@ViewBag.TotalMonto.ToString("N2")</h3>
+            <p class="text-xs text-slate-500">Monto Total</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <h3 class="text-2xl font-bold text-primary-600">@ViewBag.Agrupacion</h3>
+            <p class="text-xs text-slate-500">Agrupacion</p>
+        </div>
+    </div>
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <input type="date" name="fechaDesde" value="@ViewBag.FechaDesde"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <input type="date" name="fechaHasta" value="@ViewBag.FechaHasta"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <select name="agrupacion" class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400">
+            <option value="dia" selected="@(ViewBag.Agrupacion == "dia")">Por Dia</option>
+            <option value="semana" selected="@(ViewBag.Agrupacion == "semana")">Por Semana</option>
+            <option value="mes" selected="@(ViewBag.Agrupacion == "mes")">Por Mes</option>
+        </select>
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a asp-action="VentasPorFecha" class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">#</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Fecha</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Reservas</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Monto Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!((IEnumerable<dynamic>)ViewData["Resultados"] ?? Enumerable.Empty<dynamic>()).Any())
+                    {
+                        <tr>
+                            <td colspan="4" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay ventas en el rango seleccionado.
+                            </td>
+                        </tr>
+                    }
+                    @{
+                        int i = 1;
+                        foreach (dynamic item in (IEnumerable<dynamic>)ViewData["Resultados"] ?? Enumerable.Empty<dynamic>())
+                        {
+                            <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                                <td class="px-5 py-3 text-slate-400">@i</td>
+                                <td class="px-5 py-3 font-medium text-slate-700">@(((DateTime)item.Fecha).ToString("dd/MM/yyyy"))</td>
+                                <td class="px-5 py-3 font-semibold text-primary-600">@item.Cantidad</td>
+                                <td class="px-5 py-3 font-semibold text-slate-700">$@(((decimal)item.Monto).ToString("N2"))</td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,133 @@
+@{
+    ViewData["Title"] = "Tiempo Promedio Respuesta IA";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-robot text-primary-500"></i> Tiempo Promedio de Respuesta del Modelo IA
+        </h1>
+        <p class="text-sm text-slate-400">Metricas de rendimiento del modelo Ollama</p>
+    </div>
+
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-speedometer text-primary-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.TotalConsultas</h3>
+            <p class="text-xs text-slate-500">Consultas Totales</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-clock-history text-emerald-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@(((double)ViewBag.PromedioTiempo).ToString("0"))ms</h3>
+            <p class="text-xs text-slate-500">Tiempo Promedio</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-arrow-down-circle text-sky-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.MinTiempo ms</h3>
+            <p class="text-xs text-slate-500">Tiempo Minimo</p>
+        </div>
+        <div class="bg-white rounded-xl p-4 border border-slate-100 text-center">
+            <i class="bi bi-arrow-up-circle text-rose-400 text-xl mb-2 block"></i>
+            <h3 class="text-2xl font-bold text-slate-800">@ViewBag.MaxTiempo ms</h3>
+            <p class="text-xs text-slate-500">Tiempo Maximo</p>
+        </div>
+    </div>
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <input type="date" name="fechaDesde" value="@ViewBag.FechaDesde"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <input type="date" name="fechaHasta" value="@ViewBag.FechaHasta"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a asp-action="TiempoPromedioIA" class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Fecha/Hora</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Email</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Pregunta</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Tiempo</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Modelo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (!((IEnumerable<dynamic>)ViewData["Registros"] ?? Enumerable.Empty<dynamic>()).Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="px-4 py-8 text-center text-slate-400">
+                                <i class="bi bi-inbox text-3xl mb-2 block"></i>
+                                No hay consultas IA en el rango seleccionado.
+                            </td>
+                        </tr>
+                    }
+                    @foreach (dynamic item in (IEnumerable<dynamic>)ViewData["Registros"] ?? Enumerable.Empty<dynamic>())
+                    {
+                        string? pregunta = item.ValorAnterior?.Replace("Pregunta: ", "");
+                        string? detalles = item.Detalles;
+                        string tiempo = "—";
+                        string modelo = "—";
+
+                        if (detalles != null && detalles.Contains("Tiempo:"))
+                        {
+                            var idxTiempo = detalles.IndexOf("Tiempo: ") + 8;
+                            var finTiempo = detalles.IndexOf("ms", idxTiempo);
+                            if (finTiempo > idxTiempo)
+                                tiempo = detalles[idxTiempo..finTiempo] + "ms";
+                        }
+                        if (detalles != null && detalles.Contains("Modelo:"))
+                        {
+                            var idxModelo = detalles.IndexOf("Modelo: ") + 8;
+                            modelo = detalles[idxModelo..];
+                        }
+
+                        long.TryParse(tiempo.Replace("ms", ""), out long ms);
+                        var tiempoColor = ms < 1000 ? "bg-emerald-100 text-emerald-700" :
+                                          ms < 3000 ? "bg-amber-100 text-amber-700" :
+                                          "bg-rose-100 text-rose-700";
+
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-5 py-3 text-xs text-slate-500 whitespace-nowrap">@(((DateTime)item.Fecha).ToLocalTime().ToString("dd/MM/yyyy HH:mm:ss"))</td>
+                            <td class="px-5 py-3 text-slate-700 text-xs">@(item.Email ?? "—")</td>
+                            <td class="px-5 py-3 text-xs text-slate-600 max-w-[250px] truncate" title="@pregunta">@(pregunta ?? "—")</td>
+                            <td class="px-5 py-3">
+                                <span class="inline-flex px-2 py-0.5 rounded-md @tiempoColor text-xs font-medium">@tiempo</span>
+                            </td>
+                            <td class="px-5 py-3 text-xs text-slate-500">@modelo</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    @if ((int)ViewBag.TotalPages > 1)
+    {
+        <div class="flex justify-center items-center gap-2 mt-6">
+            @if ((int)ViewBag.PageNumber > 1)
+            {
+                <a asp-action="TiempoPromedioIA" asp-route-pageNumber="@((int)ViewBag.PageNumber - 1)" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+            }
+            <span class="px-3 py-2 text-sm text-slate-500">
+                Pagina <span class="font-semibold text-slate-700">@ViewBag.PageNumber</span> de @ViewBag.TotalPages
+            </span>
+            @if ((int)ViewBag.PageNumber < (int)ViewBag.TotalPages)
+            {
+                <a asp-action="TiempoPromedioIA" asp-route-pageNumber="@((int)ViewBag.PageNumber + 1)" asp-route-fechaDesde="@ViewBag.FechaDesde" asp-route-fechaHasta="@ViewBag.FechaHasta"
+                   class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            }
+        </div>
+    }
+</div>

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
 using TechRent.Models;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -10,10 +11,12 @@ namespace TechRent.Controllers
     public class CategoriasController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public CategoriasController(AppDbContext context)
+        public CategoriasController(AppDbContext context, IAuditService audit)
         {
             _context = context;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string searchString = "")
@@ -65,8 +68,10 @@ namespace TechRent.Controllers
             if (ModelState.IsValid)
             {
                 categoria.FechaCreacion = DateTime.UtcNow;
+                categoria.CreadoPor = User.Identity?.Name;
                 _context.Add(categoria);
                 await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Creacion de categoria", "Categoria", categoria.Id.ToString(), null, AuditService.SerializeObject(categoria), user: User, httpContext: HttpContext);
                 return RedirectToAction(nameof(Index));
             }
             return View(categoria);
@@ -95,12 +100,18 @@ namespace TechRent.Controllers
                     var dbCategoria = await _context.Categorias.FindAsync(id);
                     if (dbCategoria == null) return NotFound();
 
+                    var antes = AuditService.SerializeObject(new { dbCategoria.Nombre, dbCategoria.Descripcion });
+
                     dbCategoria.Nombre = categoria.Nombre;
                     dbCategoria.Descripcion = categoria.Descripcion;
                     dbCategoria.Activo = categoria.Activo;
                     dbCategoria.FechaActualizacion = DateTime.UtcNow;
+                    dbCategoria.ActualizadoPor = User.Identity?.Name;
 
                     await _context.SaveChangesAsync();
+
+                    var despues = AuditService.SerializeObject(new { categoria.Nombre, categoria.Descripcion });
+                    await _audit.RegistrarAsync("Modificacion de categoria", "Categoria", id.ToString(), antes, despues, user: User, httpContext: HttpContext);
                 }
                 catch (DbUpdateConcurrencyException)
                 {
@@ -130,6 +141,9 @@ namespace TechRent.Controllers
                 item.Activo = false;
                 item.FechaEliminacion = DateTime.UtcNow;
                 item.FechaActualizacion = DateTime.UtcNow;
+                item.EliminadoPor = User.Identity?.Name;
+                await _context.SaveChangesAsync();
+                await _audit.RegistrarAsync("Eliminacion logica de categoria", "Categoria", id.ToString(), "Activo=true", "Activo=false", user: User, httpContext: HttpContext);
             }
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));

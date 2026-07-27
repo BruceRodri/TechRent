@@ -66,7 +66,9 @@
                 var cargando = document.getElementById('cargando');
                 if (cargando) cargando.remove();
 
-                chat.innerHTML += '<div class="flex justify-start"><div class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-sm px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[80%] whitespace-pre-wrap">' + data.respuesta + '</div></div>';
+                var tiempoInfo = data.tiempoMs !== undefined ? ' <span class="text-emerald-400 text-xs">(' + data.tiempoMs + 'ms)</span>' : '';
+                var modeloInfo = data.modelo !== undefined ? '<div class="text-emerald-400 text-xs mt-1">Modelo: ' + data.modelo + '</div>' : '';
+                chat.innerHTML += '<div class="flex justify-start"><div class="bg-emerald-50 text-emerald-700 border border-emerald-100 text-sm px-4 py-2.5 rounded-2xl rounded-bl-md max-w-[80%] whitespace-pre-wrap">' + data.respuesta + tiempoInfo + modeloInfo + '</div></div>';
                 chat.scrollTop = chat.scrollHeight;
                 document.getElementById('btnEnviar').disabled = false;
             })

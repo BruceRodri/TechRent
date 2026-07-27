@@ -12,8 +12,14 @@ namespace TechRent.Models
         public bool Activo { get; set; } = true;
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
         public DateTime? FechaActualizacion { get; set; }
+        [StringLength(450)]
+        public string? CreadoPor { get; set; }
+        [StringLength(450)]
+        public string? ActualizadoPor { get; set; }
         // Relación: una marca tiene muchos equipos
         public ICollection<Equipo> Equipos { get; set; } = new List<Equipo>();
         public DateTime? FechaEliminacion { get; set; }
+        [StringLength(450)]
+        public string? EliminadoPor { get; set; }
     }
 }

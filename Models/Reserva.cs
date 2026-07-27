@@ -23,6 +23,10 @@ namespace TechRent.Models
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 
         public DateTime? FechaActualizacion { get; set; }
+        [StringLength(450)]
+        public string? CreadoPor { get; set; }
+        [StringLength(450)]
+        public string? ActualizadoPor { get; set; }
 
         // Llaves foráneas
         public int ClienteId { get; set; }
@@ -35,5 +39,7 @@ namespace TechRent.Models
         public ICollection<DetalleReserva> DetalleReservas { get; set; } = new List<DetalleReserva>();
         public ICollection<Pago> Pagos { get; set; } = new List<Pago>();
         public DateTime? FechaEliminacion { get; set; }
+        [StringLength(450)]
+        public string? EliminadoPor { get; set; }
     }
 }

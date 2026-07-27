@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using TechRent.Data;
+using TechRent.Services;
 
 namespace TechRent.Controllers
 {
@@ -11,11 +12,13 @@ namespace TechRent.Controllers
     {
         private readonly UserManager<IdentityUser> _userManager;
         private readonly AppDbContext _context;
+        private readonly IAuditService _audit;
 
-        public AdminMfaController(UserManager<IdentityUser> userManager, AppDbContext context)
+        public AdminMfaController(UserManager<IdentityUser> userManager, AppDbContext context, IAuditService audit)
         {
             _userManager = userManager;
             _context = context;
+            _audit = audit;
         }
 
         public async Task<IActionResult> Index(int pageNumber = 1, string? search = null, bool? mfaEnabled = null)
@@ -57,6 +60,7 @@ namespace TechRent.Controllers
             if (user == null) return NotFound();
 
             await _userManager.SetTwoFactorEnabledAsync(user, true);
+            await _audit.RegistrarAsync("Activacion de MFA por administrador", "IdentityUser", userId, "TwoFactorEnabled=false", "TwoFactorEnabled=true", $"Usuario: {user.Email}", User, HttpContext);
             TempData["Exito"] = $"MFA activado para {user.Email}.";
             return RedirectToAction(nameof(Index));
         }
@@ -69,6 +73,7 @@ namespace TechRent.Controllers
             if (user == null) return NotFound();
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
+            await _audit.RegistrarAsync("Desactivacion de MFA por administrador", "IdentityUser", userId, "TwoFactorEnabled=true", "TwoFactorEnabled=false", $"Usuario: {user.Email}", User, HttpContext);
             TempData["Exito"] = $"MFA desactivado para {user.Email}.";
             return RedirectToAction(nameof(Index));
         }
@@ -82,6 +87,7 @@ namespace TechRent.Controllers
 
             await _userManager.SetTwoFactorEnabledAsync(user, false);
             await _userManager.ResetAuthenticatorKeyAsync(user);
+            await _audit.RegistrarAsync("Reset de autenticador por administrador", "IdentityUser", userId, "TwoFactorEnabled=true", "TwoFactorEnabled=false + AuthenticatorKey reset", $"Usuario: {user.Email}", User, HttpContext);
             TempData["Exito"] = $"Clave del autenticador restablecida para {user.Email}. Se desactivó 2FA, debe configurarlo de nuevo.";
             return RedirectToAction(nameof(Index));
         }

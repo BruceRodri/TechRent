@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Ingresos por Mes";
+}
+
+<div class="fade-in">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+            <i class="bi bi-cash-stack text-primary-500"></i> Ingresos por Mes
+        </h1>
+        <p class="text-sm text-slate-400">Resumen mensual de reservas y montos totales</p>
+    </div>
+
+    <form method="get" class="flex gap-2 mb-6 flex-wrap">
+        <input type="number" name="anio" value="@ViewBag.Anio" placeholder="Anio"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400 w-28" />
+        <input type="date" name="fechaDesde" value="@ViewBag.FechaDesde"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <input type="date" name="fechaHasta" value="@ViewBag.FechaHasta"
+               class="px-3 py-2 rounded-xl border border-slate-200 text-sm text-slate-700 focus:outline-none focus:border-primary-400" />
+        <button type="submit" class="px-4 py-2 rounded-xl bg-primary-500 text-white text-sm font-medium hover:bg-primary-600 transition">
+            <i class="bi bi-search"></i> Filtrar
+        </button>
+        <a asp-action="IngresosPorMes" class="px-4 py-2 rounded-xl border border-slate-200 text-sm text-slate-500 hover:bg-slate-50 transition">
+            <i class="bi bi-x-circle"></i> Limpiar
+        </a>
+    </form>
+
+    <div class="bg-white rounded-2xl border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-slate-100">
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Mes</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Reservas</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Monto Total</th>
+                        <th class="text-left px-5 py-3 font-medium text-slate-500">Promedio/Reserva</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        var nombresMeses = new[] { "", "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+                                                   "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre" };
+                    }
+                    @foreach (dynamic item in (IEnumerable<dynamic>)ViewData["Resultados"] ?? Enumerable.Empty<dynamic>())
+                    {
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                            <td class="px-5 py-3 font-medium text-slate-700">@nombresMeses[item.Mes] @item.Anio</td>
+                            <td class="px-5 py-3 font-semibold text-primary-600">@item.TotalReservas</td>
+                            <td class="px-5 py-3 font-semibold text-slate-700">$@(((decimal)item.MontoTotal).ToString("N2"))</td>
+                            <td class="px-5 py-3 text-slate-500">$@(((decimal)item.MontoPromedio).ToString("N2"))</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

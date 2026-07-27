@@ -21,6 +21,7 @@ namespace TechRent.Controllers
         private readonly IEmailNotificationService _emailNotification;
         private readonly InventarioService _inventario;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IAuditService _audit;
 
         public PagoController(
             AppDbContext context,
@@ -30,7 +31,8 @@ namespace TechRent.Controllers
             TechRent.Services.IEmailSender emailSender,
             IEmailNotificationService emailNotification,
             InventarioService inventario,
-            UserManager<IdentityUser> userManager)
+            UserManager<IdentityUser> userManager,
+            IAuditService audit)
         {
             _context = context;
             _payPhoneService = payPhoneService;
@@ -40,6 +42,7 @@ namespace TechRent.Controllers
             _emailNotification = emailNotification;
             _inventario = inventario;
             _userManager = userManager;
+            _audit = audit;
         }
 
         public async Task<IActionResult> CreateLink(int ordenId)
@@ -152,6 +155,7 @@ namespace TechRent.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                    await _audit.RegistrarAsync("Pago confirmado - PayPal", "TransaccionPago", transaccion.Id.ToString(), "Estado=Pendiente", "Estado=Pagado", $"Orden #{transaccion.OrdenAlquilerId}", User, HttpContext);
                 }
                 catch
                 {
@@ -199,6 +203,7 @@ namespace TechRent.Controllers
                         await RestaurarStockAsync(transaccion.OrdenAlquiler);
                         await _context.SaveChangesAsync();
                         await transaction.CommitAsync();
+                        await _audit.RegistrarAsync("Pago cancelado - PayPal Cancel", "TransaccionPago", transaccion.Id.ToString(), "Estado=Pendiente", "Estado=Cancelado", $"Orden #{transaccion.OrdenAlquilerId}", User, HttpContext);
                     }
                     catch
                     {
@@ -247,6 +252,7 @@ namespace TechRent.Controllers
                     await VaciarCarritoAsync(transaccion.OrdenAlquiler.UsuarioEmail);
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    await _audit.RegistrarAsync("Pago confirmado manualmente - MarcarPagado", "TransaccionPago", transaccion.Id.ToString(), "Estado=Otro", "Estado=Pagado", $"Orden #{transaccion.OrdenAlquilerId}", User, HttpContext);
                 }
                 catch
                 {
@@ -343,6 +349,7 @@ namespace TechRent.Controllers
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
                     await EnviarEmailConfirmacionAsync(transaccion.OrdenAlquiler);
+                    await _audit.RegistrarAsync("Pago confirmado - PayPal", "TransaccionPago", transaccion.Id.ToString(), "Estado=Pendiente", "Estado=Pagado", $"Orden #{transaccion.OrdenAlquilerId}", User, HttpContext);
                 }
                 catch
                 {

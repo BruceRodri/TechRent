@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using TechRent.Data;
@@ -11,9 +12,11 @@ using TechRent.Data;
 namespace TechRent.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260726220251_AddEliminadoPorField")]
+    partial class AddEliminadoPorField
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -239,16 +242,8 @@ namespace TechRent.Migrations
                         .HasMaxLength(256)
                         .HasColumnType("character varying(256)");
 
-                    b.Property<string>("Entidad")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
                     b.Property<DateTime>("Fecha")
                         .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("IdentificadorEntidad")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("IpAddress")
                         .HasMaxLength(45)
@@ -272,14 +267,6 @@ namespace TechRent.Migrations
                     b.Property<string>("UserId")
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
-
-                    b.Property<string>("ValorAnterior")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
-
-                    b.Property<string>("ValorNuevo")
-                        .HasMaxLength(4000)
-                        .HasColumnType("character varying(4000)");
 
                     b.HasKey("Id");
 
@@ -328,14 +315,6 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<string>("Descripcion")
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
@@ -373,14 +352,6 @@ namespace TechRent.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("Direccion")
                         .HasMaxLength(200)
@@ -474,19 +445,11 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<int>("Cantidad")
                         .HasColumnType("integer");
 
                     b.Property<int>("CantidadDias")
                         .HasColumnType("integer");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("EliminadoPor")
                         .HasMaxLength(450)
@@ -585,16 +548,8 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<int>("CategoriaId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("Descripcion")
                         .HasMaxLength(500)
@@ -657,14 +612,6 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<string>("Descripcion")
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
@@ -702,14 +649,6 @@ namespace TechRent.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("EliminadoPor")
                         .HasMaxLength(450)
@@ -827,14 +766,6 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<string>("EliminadoPor")
                         .HasMaxLength(450)
                         .HasColumnType("character varying(450)");
@@ -885,16 +816,8 @@ namespace TechRent.Migrations
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
 
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
                     b.Property<int>("ClienteId")
                         .HasColumnType("integer");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("EliminadoPor")
                         .HasMaxLength(450)
@@ -1008,14 +931,6 @@ namespace TechRent.Migrations
 
                     b.Property<bool>("Activo")
                         .HasColumnType("boolean");
-
-                    b.Property<string>("ActualizadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
-
-                    b.Property<string>("CreadoPor")
-                        .HasMaxLength(450)
-                        .HasColumnType("character varying(450)");
 
                     b.Property<string>("EliminadoPor")
                         .HasMaxLength(450)
