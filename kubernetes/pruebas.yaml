@@ -1,0 +1,62 @@
+apiVersion: v1
+kind: Pod
+metadata: {name: red-servidor, namespace: techrent-lab, labels: {app: red-servidor}}
+spec:
+  containers:
+    - name: iperf
+      image: techrent-red:lab
+      imagePullPolicy: Never
+      command: ["iperf3", "-s"]
+      ports: [{containerPort: 5201}]
+---
+apiVersion: v1
+kind: Service
+metadata: {name: red-servidor, namespace: techrent-lab}
+spec:
+  selector: {app: red-servidor}
+  ports: [{port: 5201, targetPort: 5201}]
+---
+apiVersion: v1
+kind: Pod
+metadata: {name: red-cliente, namespace: techrent-lab}
+spec:
+  containers:
+    - name: red
+      image: techrent-red:lab
+      imagePullPolicy: Never
+      securityContext:
+        capabilities: {add: [NET_ADMIN]}
+      command: ["sleep", "36000"]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: k6-carga, namespace: techrent-lab}
+spec:
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:latest
+          imagePullPolicy: Never
+          args: ["run", "/scripts/k6-carga.js"]
+          volumeMounts: [{name: scripts, mountPath: /scripts}]
+      volumes: [{name: scripts, configMap: {name: k6-scripts}}]
+---
+apiVersion: batch/v1
+kind: Job
+metadata: {name: k6-resiliencia, namespace: techrent-lab}
+spec:
+  suspend: true
+  backoffLimit: 0
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: k6
+          image: grafana/k6:latest
+          imagePullPolicy: Never
+          args: ["run", "/scripts/k6-resiliencia.js"]
+          volumeMounts: [{name: scripts, mountPath: /scripts}]
+      volumes: [{name: scripts, configMap: {name: k6-scripts}}]

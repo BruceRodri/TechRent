@@ -89,7 +89,8 @@ namespace TechRent.Controllers
         [HttpPost]
         [ValidateAntiForgeryToken]
         [Authorize(Roles = "Administrador")]
-        public async Task<IActionResult> Create(bool? _ = null)
+        [ActionName("Create")]
+        public async Task<IActionResult> CreatePost()
         {
             var nombre = Request.Form["Nombre"].ToString();
             var descripcion = Request.Form["Descripcion"].ToString();

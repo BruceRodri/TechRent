@@ -136,7 +136,7 @@ namespace TechRent.Services
                     "Equipo multifuncional con amplia compatibilidad de software"
                 };
 
-                for (int i = 1; i <= 50000; i++)
+                for (int i = 1; i <= 1000; i++)
                 {
                     var tipo = tiposEquipo[random.Next(tiposEquipo.Length)];
                     var descripcion = descripciones[random.Next(descripciones.Length)];
@@ -194,7 +194,7 @@ namespace TechRent.Services
                     "Castillo", "Paredes", "Cordova", "Leon", "Valdez", "Espinoza", "Sandoval", "Pacheco", "Solis", "Melendez"
                 };
 
-                for (int i = 1; i <= 100000; i++)
+                for (int i = 1; i <= 2000; i++)
                 {
                     var idxNombre = (i - 1) % nombres.Length;
                     var idxApellido1 = ((i - 1) / nombres.Length) % apellidos.Length;
@@ -237,7 +237,7 @@ namespace TechRent.Services
                 var random = new Random();
                 var fechaInicio = new DateTime(2023, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-                for (int i = 1; i <= 150000; i++)
+                for (int i = 1; i <= 1500; i++)
                 {
                     var dias = random.Next(1, 30);
                     var inicio = fechaInicio.AddDays(random.Next(0, 800));
@@ -275,7 +275,7 @@ namespace TechRent.Services
                 var reservas = await _context.Reservas.ToListAsync();
                 var equiposList = await _context.Equipos.ToListAsync();
                 var random = new Random();
-                var totalRequerido = 700000;
+                var totalRequerido = 7000;
 
                 var detalles = new List<DetalleReserva>(totalRequerido);
                 for (int i = 1; i <= totalRequerido; i++)

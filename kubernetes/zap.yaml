@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata: {name: zap, namespace: techrent-lab}
+spec:
+  restartPolicy: Never
+  containers:
+    - name: zap
+      image: ghcr.io/zaproxy/zaproxy:stable
+      imagePullPolicy: Never
+      command: ["/bin/bash", "-c"]
+      args:
+        - mkdir -p /zap/wrk; cd /zap/wrk; zap-baseline.py -t http://techrent -m 1 -J zap-k8s.json -r zap-k8s.html; sleep 36000

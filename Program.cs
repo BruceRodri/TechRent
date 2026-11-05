@@ -6,11 +6,17 @@ using TechRent.Middleware;
 using TechRent.Services;
 using TechRent.Services.Payments;
 using TechRent.Settings;
+using Microsoft.AspNetCore.DataProtection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
+
+var keyDirectory = builder.Configuration["DataProtection:KeyDirectory"];
+if (!string.IsNullOrEmpty(keyDirectory))
+    builder.Services.AddDataProtection().SetApplicationName("TechRent")
+        .PersistKeysToFileSystem(new DirectoryInfo(keyDirectory));
 
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
@@ -94,6 +100,10 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 var app = builder.Build();
 
+app.MapGet("/health/live", () => Results.Ok(new { status = "alive" }));
+app.MapGet("/health/ready", async (AppDbContext db) =>
+    await db.Database.CanConnectAsync() ? Results.Ok(new { status = "ready" }) : Results.StatusCode(503));
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -101,6 +111,12 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.Use(async (context, next) =>
+{
+    context.Response.Headers["X-Content-Type-Options"] = "nosniff";
+    context.Response.Headers["X-TechRent-Instance"] = Environment.MachineName;
+    await next();
+});
 app.UseStaticFiles();
 app.UseRouting();
 
@@ -116,8 +132,9 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
-using (var scope = app.Services.CreateScope())
+if (builder.Configuration.GetValue("Initialization:Enabled", true))
 {
+    using var scope = app.Services.CreateScope();
     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await context.Database.MigrateAsync();
 
@@ -129,5 +146,8 @@ using (var scope = app.Services.CreateScope())
     var identitySeeder = new IdentitySeeder(context, userManager, roleManager);
     await identitySeeder.SeedAsync();
 }
+
+if (builder.Configuration.GetValue("Initialization:ExitAfter", false))
+    return;
 
 app.Run();
