@@ -150,6 +150,15 @@ namespace TechRent.Controllers
 
                     await _context.SaveChangesAsync();
                     await transaction.CommitAsync();
+                    try
+                    {
+                        await _context.Database.ExecuteSqlInterpolatedAsync($"SELECT pg_notify('techrent_reservas', {reserva.Id.ToString()})");
+                    }
+                    catch (Exception ex)
+                    {
+                        HttpContext.RequestServices.GetRequiredService<ILogger<ReservasController>>()
+                            .LogWarning(ex, "La reserva se guardó, pero no se pudo enviar su notificación");
+                    }
                     return RedirectToAction(nameof(Index));
                 }
                 catch

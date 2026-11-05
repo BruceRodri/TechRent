@@ -79,6 +79,22 @@
     </div>
 </div>
 
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <section class="bg-white rounded-xl p-5 border border-slate-100" aria-live="polite">
+        <h2 class="text-lg font-semibold">Actividad de reservas en tiempo real</h2>
+        <p id="eventStatus">Conectando...</p>
+        <p id="eventMessage">Esperando nuevas reservas.</p>
+    </section>
+    <script>
+        const stream = new EventSource('/eventos/reservas');
+        stream.onopen = () => document.getElementById('eventStatus').textContent = 'Conectado';
+        stream.onerror = () => document.getElementById('eventStatus').textContent = 'Reconectando...';
+        stream.addEventListener('reserva', e => {
+            document.getElementById('eventMessage').textContent = 'Se registró la reserva #' + e.data;
+        });
+    </script>
+}
 <script>
     async function loadStats() {
         try {

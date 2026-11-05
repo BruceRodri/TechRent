@@ -1,0 +1,16 @@
+apiVersion: batch/v1
+kind: Job
+metadata: {name: techrent-init-2, namespace: techrent-lab}
+spec:
+  backoffLimit: 2
+  template:
+    spec:
+      restartPolicy: Never
+      containers:
+        - name: init
+          image: techrent-distribuido:lab
+          imagePullPolicy: Never
+          envFrom: [{secretRef: {name: techrent-config}}]
+          env:
+            - {name: Initialization__Enabled, value: "true"}
+            - {name: Initialization__ExitAfter, value: "true"}
